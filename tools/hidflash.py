@@ -83,7 +83,7 @@ MAX_WRITE_DATA = REPORT_SIZE - 16
 MAX_CRC_BLOCKS = (REPORT_SIZE - 8) // 2
 
 DEFAULT_DEVICE = "auto"           # descubrir hidraw por VID:PID 4c4a:4155 vía sysfs
-PRODUCT_NAME = "DaniBoot"         # iProduct del SPL propio (descriptor.c)
+PRODUCT_NAME = "Custom JL uboot"  # iProduct del SPL propio (descriptor.c)
 JL_VID = "04C4A"
 JL_PID = "04155"
 

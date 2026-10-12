@@ -30,36 +30,31 @@ static const u8 LANGUAGE_STR[] = {
     0x04, 0x03, 0x09, 0x04
 };
 static const u8 product_string[] = {
-    18,
+    32,
     0x03,
-    'D', 0x00,
-    'a', 0x00,
-    'n', 0x00,
-    'i', 0x00,
-    'B', 0x00,
+    'C', 0x00,
+    'u', 0x00,
+    's', 0x00,
+    't', 0x00,
+    'o', 0x00,
+    'm', 0x00,
+    ' ', 0x00,
+    'J', 0x00,
+    'L', 0x00,
+    ' ', 0x00,
+    'u', 0x00,
+    'b', 0x00,
     'o', 0x00,
     'o', 0x00,
     't', 0x00,
 };
 static const u8 MANUFACTURE_STR[] = {
-    34,         // the length of this descriptor is 34 bytes
+    10,         // the length of this descriptor is 10 bytes
     0x03,       // the type code of a string descriptor is 0x03
-    0x4a, 0x00, //J
-    0x69, 0x00, //i
-    0x65, 0x00, //e
-    0x6c, 0x00, //l
-    0x69, 0x00, //i
-    0x20, 0x00, //
-    0x54, 0x00, //T
-    0x65, 0x00, //e
-    0x63, 0x00, //c
-    0x68, 0x00, //h
+    0x44, 0x00, //D
+    0x61, 0x00, //a
     0x6e, 0x00, //n
-    0x6f, 0x00, //o
-    0x6c, 0x00, //l
-    0x6f, 0x00, //o
-    0x67, 0x00, //g
-    0x79, 0x00, //y
+    0x69, 0x00, //i
 };
 
 static const u8 sConfigDescriptor[] = {	//<Config Descriptor
@@ -92,7 +87,7 @@ void get_product_str(u8 *ptr)
 void get_iserialnumber_str(u8 *ptr)
 {
     /* "DaniBoot <git-short>": SPL_GIT_SHORT lo inyecta el Makefile en cada build */
-    static const char ver[] = "DaniBoot " SPL_GIT_SHORT;
+    static const char ver[] = "Commit: " SPL_GIT_SHORT;
     u8 n = 2;
     const char *p;
     for (p = ver; *p && n < 62; p++) {
