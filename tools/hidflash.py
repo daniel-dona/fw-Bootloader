@@ -556,6 +556,13 @@ class HidFlash:
         return {"addr": addr, "len": length, "eoffset": eoffset, "alignsize": align}
 
     def erase(self, offset, etype=ERASE_SECTOR):
+        t0, self.timeout = self.timeout, max(self.timeout, 5.0)
+        try:
+            return self._erase(offset, etype)
+        finally:
+            self.timeout = t0
+
+    def _erase(self, offset, etype=ERASE_SECTOR):
         """0xC2: borra `ERASE_UNITS[etype]` bytes desde `offset` (relativo a la región)."""
         if etype not in ERASE_UNITS:
             raise ValueError("erase type inválido")
