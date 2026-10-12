@@ -22,7 +22,7 @@ static const u8 sDeviceDescriptor[] = { //<Device Descriptor
     0x00, 0x01,     // bcdDevice: version 1.0
     0x01,       // iManufacturer: Index to string descriptor that contains the string <Your Name> in Unicode
     0x02,       // iProduct: Index to string descriptor that contains the string <Your Product Name> in Unicode
-    0x00,       // iSerialNumber: none
+    0x03,       // iSerialNumber: version/commit del SPL (get_iserialnumber_str)
     0x01        // bNumConfigurations: 1
 };
 
@@ -91,6 +91,16 @@ void get_product_str(u8 *ptr)
 }
 void get_iserialnumber_str(u8 *ptr)
 {
+    /* "DaniBoot <git-short>": SPL_GIT_SHORT lo inyecta el Makefile en cada build */
+    static const char ver[] = "DaniBoot " SPL_GIT_SHORT;
+    u8 n = 2;
+    const char *p;
+    for (p = ver; *p && n < 62; p++) {
+        ptr[n++] = *p;
+        ptr[n++] = 0x00;
+    }
+    ptr[0] = n;
+    ptr[1] = 0x03;
 }
 
 void get_string_ee(u8 *ptr)
