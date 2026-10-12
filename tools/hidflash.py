@@ -844,8 +844,7 @@ def _open_hw(args):
 
 def main(argv=None):
     ap = argparse.ArgumentParser(
-        description="Host USB-HID de flasheo para el SPL (fw-Bootloader JieLi). "
-                    "Por defecto SOLO ejecuta el selftest offline (no toca hardware).")
+        description="Host USB-HID de flasheo para el SPL (fw-Bootloader JieLi).")
     ap.add_argument("--device", default=DEFAULT_DEVICE,
                     help="hidraw a usar: 'auto' = detectar 4c4a:4155 por sysfs "
                          "(default) o ruta explícita p.ej. /dev/hidraw7")
@@ -854,8 +853,6 @@ def main(argv=None):
     ap.add_argument("--wait", type=float, default=30.0,
                     help="segundos esperando al DaniBoot si no está enumerado (default 30)")
     sub = ap.add_subparsers(dest="cmd")
-
-    sub.add_parser("selftest", help="test offline completo (default, sin hardware)")
 
     p = sub.add_parser("check", help="DEVICE_CHECK contra el hardware")
     p = sub.add_parser("init", help="DEVICE_INIT e info de la región")
@@ -892,22 +889,7 @@ def main(argv=None):
     p = sub.add_parser("reboot", help="REBOOT (0xCA, sin respuesta)")
     p = sub.add_parser("msc", help="ENTER_ROM_MSC (0xD0): reinicia en MSC del ROM")
     args = ap.parse_args(argv)
-    cmd = args.cmd or "selftest"
-
-    if cmd in ("selftest", "sim"):
-        if cmd == "sim":
-            sim = SPLSimulator()
-            hf = HidFlash(SimTransport(sim), trace=True, timeout=0.1)
-            print("sesión demo contra SPLSimulator (offline):")
-            print(" check:", hf.device_check())
-            print(" init :", hf.device_init(b"app_dir_head"))
-            img = bytes(range(256)) * 2
-            hf.flash(img, progress=lambda m: print("  " + m))
-            print(" verify ok; reboot...")
-            hf.reboot()
-            print(" rebooted:", sim.rebooted)
-            return 0
-        return selftest()
+    cmd = args.cmd
 
     hf = _open_hw(args)
     try:
