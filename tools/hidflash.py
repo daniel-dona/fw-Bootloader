@@ -811,7 +811,7 @@ def _open_hw(args):
             if path is None and time.time() >= deadline:
                 print("no hay ningún %s enumerado en %ss. ¿El chip está en la "
                       "ventana de update? (reinicia el chip y reintenta; "
-                      "la ventana dura %ds)" % (PRODUCT_NAME, args.wait, WINDOW_MS // 1000),
+                      "la ventana dura 5s)" % (PRODUCT_NAME, args.wait),
                       file=sys.stderr)
                 sys.exit(2)
         if path is not None:
