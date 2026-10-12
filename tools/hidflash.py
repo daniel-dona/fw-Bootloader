@@ -906,10 +906,16 @@ def main(argv=None):
             print("usb      vid=%s pid=%s sdk_id=0x%08X" % (i["vid"].hex(), i["pid"].decode("ascii", "replace"), i["sdk_id"]))
             print("flash    id=%s size=%d" % (i["flash_id"], i["flash_capacity"]))
             print("uuid     %s" % i["uuid"])
-            print("region    base      size")
-            for name in ("spl", "app", "isd"):
-                base = i["regions"][name]; size = i["region_sizes"][name]
-                print("%-8s  0x%05X  %d" % (name, base, size))
+            rows = [(n, "0x%05X" % i["regions"][n], str(i["region_sizes"][n]))
+                    for n in ("spl", "app", "isd")]
+            w = [max(len(c) for c in ("region", "base", "size")) + 2]
+            sep = "+" + "+".join("-" * x for x in w) + "+"
+            print(sep)
+            print("|" + "|".join(c.center(x) for c, x in zip(("region", "base", "size"), w)) + "|")
+            print(sep)
+            for r in rows:
+                print("|" + "|".join(c.ljust(x) for c, x in zip(r, w)) + "|")
+            print(sep)
             print("commit   %s" % i["commit"])
         elif cmd == "check":
             print(hf.device_check())
