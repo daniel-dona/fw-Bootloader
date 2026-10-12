@@ -93,11 +93,9 @@ int main(void)
     }
 
 
-#if(USE_UPGRADE_MAGIC)
-    if (uboot_check_upgrade_magic() || err) {
-        user_check_upgrade(err);
-    }
-#endif
+    /* Ventana de update: escuchar siempre al host por HID (timeout 3 s
+     * dentro de upgrade_loop; si no hay sesion, sigue a sfc_mode_boot). */
+    user_check_upgrade(err);
 
 #if 0
     JL_PORTA->DIR |= BIT(6);
