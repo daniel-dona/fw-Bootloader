@@ -889,6 +889,9 @@ def main(argv=None):
     p = sub.add_parser("reboot", help="REBOOT (0xCA, sin respuesta)")
     p = sub.add_parser("msc", help="ENTER_ROM_MSC (0xD0): reinicia en MSC del ROM")
     args = ap.parse_args(argv)
+    if not args.cmd:
+        ap.print_help()
+        sys.exit(2)
     cmd = args.cmd
 
     hf = _open_hw(args)
