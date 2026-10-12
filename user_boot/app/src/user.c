@@ -428,16 +428,7 @@ void jl_su_devcie_check()
 }
 
 
-void jl_su_updata_dual_bank_crc()
-{
-    u16 crc = g_ops->dual_bank_info.crc;
-    u32 r = jlfs_updata_dual_bank_info(&upgrade_file, crc);
-
-    dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
-    dev_g_ops->cmd_len = 1 + 1;
-
-    set_remain_and_upgrade_rsp(JL_SU_CMD_UPDATA_DUAL_BANK_CRC);
-}
+/* jl_su_updata_dual_bank_crc eliminado: sin dual-bank en este producto */
 void upgrade_loop()
 {
     dev_g_ops = (JL_SECTOR_COMMAND_DEV_ITEM *)dev_g_buf;//reply buf, 64 size is needed for usb compatibility later
@@ -490,10 +481,6 @@ void upgrade_loop()
             jl_su_devcie_check();
             break;
 
-        case JL_SU_CMD_UPDATA_DUAL_BANK_CRC:
-            jl_su_updata_dual_bank_crc();
-            break;
-
         case JL_SU_CMD_REBOOT:
             log_info("JL_SU_CMD_REBOOT\n");
             ut_devic_mode_close();
@@ -534,42 +521,7 @@ u8 user_check_upgrade(u32 jlfs_err)
     log_info("flash_app_start_addr = 0x%x\n", flash_app_base_addr);
     log_info("flash_offset_size = 0x%x\n", flash_offset_size);
 
-    u32 flash_uboot_offset = get_uboot_offset();
-    log_info("flash_uboot_offset = 0x%x\n", flash_uboot_offset);
-    if (flash_uboot_offset == 1024 * 64) {
-        log_info("cpoy uboot\n");
-        JLFS_FILE app_head = {
-            .addr = flash_app_base_addr,
-            .size = flash_alignsize,
-            .pos  = 0,
-        };
-        JLFS_FILE file_paste = {
-            .addr = flash_offset_size,
-            .size = flash_app_base_addr,
-        };
-        JLFS_FILE file_copy = {
-            .addr = flash_uboot_offset,
-            .size = flash_app_base_addr,
-        };
-        jlfs_erase(&app_head, app_head.size);
-
-        set_uboot_offset(flash_offset_size);
-
-        jlfs_fseek(&file_paste, 0);
-        jlfs_erase(&file_paste, file_paste.size);
-        u32 len;
-        u32 l = flash_alignsize;
-        u8 *p = get_global_buffer(l);
-        jlfs_fseek(&file_copy, 0);
-        jlfs_fseek(&file_paste, 0);
-        do {
-            len = jlfs_fread(&file_copy, p, l);
-            if (!len) {
-                break;
-            }
-            jlfs_write(&file_paste, p, len);
-        } while (1);
-    }
+    /* Bloque de migracion uboot@64K eliminado: no aplica a este producto */
 
     u8 err = jlfs_fopen_by_name(&upgrade_file, "app_dir_head", 0);
     jlfs_ok = !err;
