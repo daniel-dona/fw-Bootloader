@@ -629,12 +629,18 @@ class HidFlash:
         return True
 
     def reboot(self):
-        """0xCA: ACK SUSS y reset."""
-        self._xact(CMD_REBOOT)
+        """0xCA: ACK SUSS y reset. El EIO/timeout posterior al reset no es error."""
+        try:
+            self._xact(CMD_REBOOT)
+        except (HidTimeout, OSError):
+            pass
 
     def enter_rom_msc(self):
-        """0xD0: ACK SUSS y reset a MSC del ROM."""
-        self._xact(CMD_ENTER_ROM_MSC)
+        """0xD0: ACK SUSS y reset a MSC del ROM. El EIO/timeout posterior no es error."""
+        try:
+            self._xact(CMD_ENTER_ROM_MSC)
+        except (HidTimeout, OSError):
+            pass
 
     def updata_dual_bank_crc(self, crc, version=0):
         """0xCB: publica el CRC del banco activo (DUAL_BANK_MODE)."""
