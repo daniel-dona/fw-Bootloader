@@ -877,13 +877,15 @@ def main(argv=None):
     p.add_argument("--file", required=True)
     p.add_argument("--block-size", type=lambda x: int(x, 0), default=None)
 
-    p = sub.add_parser("flash", help="CHECK->INIT->ERASE->WRITE->VERIFY (sin reboot)")
+    p = sub.add_parser("flash", help="CHECK->INIT->ERASE->WRITE->VERIFY (sin reboot), reanudable")
     p.add_argument("--file", required=True)
-    p.add_argument("--name", default="app_dir_head")
-    p.add_argument("--mode", type=int, default=0)
+    p.add_argument("--offset", type=lambda x: int(x, 0), default=0x3000,
+                   help="direccion absoluta de flash (default 0x3000 = app)")
     p.add_argument("--erase-type", type=int, default=ERASE_SECTOR, choices=list(ERASE_UNITS))
     p.add_argument("--spl", action="store_true",
-                   help="flashea el propio SPL: mode=1 y recorta el fichero a 0x3000 B")
+                   help="flashea el propio SPL: offset 0 y recorta el fichero a 12 KB")
+    p.add_argument("--unsafe", action="store_true",
+                   help="permite escribir fuera de la region de app (0x0-0x3000)")
 
     p = sub.add_parser("info", help="toda la informacion del chip: IDs, flash, regiones, commit")
     p = sub.add_parser("reboot", help="REBOOT (0xCA, sin respuesta)")
