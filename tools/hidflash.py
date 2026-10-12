@@ -112,7 +112,7 @@ def find_hidraw(vid=JL_VID, pid=JL_PID, root="/sys/class/hidraw", product=None):
                         break
             if ok and product is not None:
                 hid_name = _hid_product_name(base)
-                if hid_name != product:
+                if product not in (hid_name or ""):
                     ok = False
             if ok:
                 return "/dev/" + name
