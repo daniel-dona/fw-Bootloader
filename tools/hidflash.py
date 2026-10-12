@@ -792,8 +792,7 @@ def _try_open(path, args):
     try:
         return HidFlash(HidrawTransport(path), trace=args.trace, timeout=args.timeout)
     except PermissionError:
-        print("sin permisos para %s. Instala la regla udev UNA vez:  make udev" % path,
-              file=sys.stderr)
+        print("error: permission denied on %s (run: make udev)" % path, file=sys.stderr)
         sys.exit(2)
     except OSError as e:
         if e.errno in (errno.ENODEV, errno.ENOENT):
@@ -808,8 +807,7 @@ def _open_hw(args):
     deadline = time.time() + args.wait
     path = None if args.device == "auto" else args.device
     if args.device == "auto":
-        print("esperando %s (hasta %ds)..." % (PRODUCT_NAME, args.wait),
-              file=sys.stderr)
+        print("waiting for %s..." % PRODUCT_NAME, file=sys.stderr)
     announced = False
     while True:
         if path is not None and not announced:
@@ -949,28 +947,17 @@ def main(argv=None):
     except HidTimeout as e:
         cmd = getattr(e, "cmd", None)
         if cmd == 0xD1:
-            print("el SPL en ejecución no implementó 0xD1 (info): tu flash ya "
-                  "tiene la versión nueva pero está corriendo la anterior.",
-                  file=sys.stderr)
-            print("Haz un CICLO DE ENERGÍA (desenchufa/enchufa): el reset por "
-                  "software puede arrancar caliente sin recargar el banco.",
-                  file=sys.stderr)
+            print("error: 0xD1 not implemented (power-cycle to load new SPL)", file=sys.stderr)
         elif cmd == 0xD0:
-            print("sin respuesta al 0xD0: la versión corriendo no soporta el "
-                  "reinicio a MSC. Usa ROM MSC manual o reflash del SPL.",
-                  file=sys.stderr)
+            print("error: 0xD0 not implemented (running SPL too old)", file=sys.stderr)
         else:
-            print("sin respuesta del SPL: %s" % e, file=sys.stderr)
-            print("Si el chip estaba corriendo el app, RESETEA el hardware "
-                  "(desenchufa/enchufa) para entrar en la ventana de 5 s y "
-                  "reintenta el comando inmediatamente.", file=sys.stderr)
+            print("error: no response to cmd 0x%02X" % cmd, file=sys.stderr)
         sys.exit(1)
     except CommandError as e:
         print("error de comando: %s" % e, file=sys.stderr)
         sys.exit(1)
     except OSError as e:
-        print("el dispositivo desapareció a mitad de operación: %s" % e, file=sys.stderr)
-        print("(fin de ventana o reset del chip; reintenta)", file=sys.stderr)
+        print("error: device lost mid-operation (%s)" % e, file=sys.stderr)
         sys.exit(1)
     finally:
         hf.close()
