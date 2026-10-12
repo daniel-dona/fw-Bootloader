@@ -8,7 +8,7 @@
 
 MEMORY
 {
-	text_ram    :   ORIGIN = ENTRY_ADDR,  LENGTH = 20k
+	text_ram    :   ORIGIN = ENTRY_ADDR,  LENGTH = 24k
 #ifdef SUPPORT_BP_DEBUG
 	bp_ram(rwx) : ORIGIN = BP_BEG,  LENGTH = BP_SIZE
 #endif/* #ifdef SUPPORT_BP_DEBUG */
