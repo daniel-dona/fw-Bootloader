@@ -23,11 +23,11 @@ venv:
 spl: venv
 	$(MAKE) -C $(FWDIR) TOOL_DIR=$(TC)
 
-image:
+image: spl
 	@mkdir -p build
 	$(PY) tools/compose_image.py --bank $(BANK) --out $(IMAGE)
 
-validate:
+validate: image
 	$(PY) tools/validate_image.py $(IMAGE)
 
 flash:
