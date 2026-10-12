@@ -541,8 +541,12 @@ class HidFlash:
         uuid = r[24:40]
         version = bytes([ver4 >> 24 & 0xFF, ver4 >> 16 & 0xFF,
                          ver4 >> 8 & 0xFF, ver4 & 0xFF]).decode("ascii", "replace")
+        rgn = {"spl": spl, "app": app, "isd": isd}
+        bounds = sorted(list(rgn.values()) + [cap])
+        sizes = {n: bounds[bounds.index(b) + 1] - b for n, b in rgn.items()}
         out = {"flash_id": "0x%08X" % fid, "flash_capacity": cap,
-               "regions": {"spl": spl, "app": app, "isd": isd},
+               "regions": rgn,
+               "region_sizes": sizes,
                "commit": version, "uuid": uuid.hex()}
         out.update(chk); out.update(init)
         return out
@@ -902,7 +906,10 @@ def main(argv=None):
             print("usb     : vid=%s pid=%s sdk_id=0x%08X" % (i["vid"].hex(), i["pid"].decode("ascii", "replace"), i["sdk_id"]))
             print("flash   : id=%s size=%d" % (i["flash_id"], i["flash_capacity"]))
             print("uuid    : %s" % i["uuid"])
-            print("regiones: spl=0x%05X app=0x%05X isd=0x%05X" % (i["regions"]["spl"], i["regions"]["app"], i["regions"]["isd"]))
+            print("regiones:")
+            for name in ("spl", "app", "isd"):
+                base = i["regions"][name]; size = i["region_sizes"][name]
+                print("  %-4s base=0x%05X size=%d (%d KB)" % (name, base, size, size // 1024))
             print("commit  : %s" % i["commit"])
         elif cmd == "check":
             print(hf.device_check())
