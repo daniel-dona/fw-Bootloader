@@ -625,25 +625,15 @@ class HidFlash:
         info = self.device_check()
         if info["sdk_id"] != SDK_ID:
             raise CommandError(CMD_DEVICE_CHECK, STATUS_SDK_ID_ERROR)
-        if progress:
-            progress("device: vid=%s pid=%s sdk=0x%08X" %
-                     (info["vid"].hex(), info["pid"].decode("ascii", "replace"), info["sdk_id"]))
         init = self.device_init(file_name, mode)
-        if progress:
-            progress("region '%s': addr=0x%X len=%d align=%d" %
-                     (file_name, init["addr"], init["len"], init["alignsize"]))
         img = bytes(image)
         if len(img) > init["len"]:
             raise ValueError("imagen %d B > región %d B" % (len(img), init["len"]))
         align = init["alignsize"]
         padded = len(img) + (-len(img)) % align
         unit = ERASE_UNITS[erase_type]
-        if progress:
-            progress("erase: %d B (unidad %d)" % (padded, unit))
         for off in range(0, padded, unit):
             self.erase(off, erase_type)
-        if progress:
-            progress("write: %d B en chunks de <=%d" % (len(img), MAX_WRITE_DATA))
         for off in range(0, len(img), MAX_WRITE_DATA):
             self.write(off, img[off:off + MAX_WRITE_DATA])
         if progress:
@@ -807,11 +797,10 @@ def _open_hw(args):
     deadline = time.time() + args.wait
     path = None if args.device == "auto" else args.device
     if args.device == "auto":
-        print("waiting for %s..." % PRODUCT_NAME, file=sys.stderr)
+        print("waiting...", file=sys.stderr)
     announced = False
     while True:
         if path is not None and not announced:
-            print("abierto %s" % path, file=sys.stderr)
             announced = True
         if path is None:
             path = find_hidraw(product=PRODUCT_NAME)
@@ -824,9 +813,6 @@ def _open_hw(args):
         if path is not None:
             hf = _try_open(path, args)
             if hf is not None:
-                if args.device == "auto":
-                    print("device: %s (%s autodetectado)" % (path, PRODUCT_NAME),
-                          file=sys.stderr)
                 return hf
         time.sleep(0.1)
 
@@ -935,19 +921,18 @@ def main(argv=None):
             if getattr(args, "spl", False):
                 img = img[:0x3000]
                 args.mode = 1
-            hf.flash(img, args.name.encode(), args.mode, args.erase_type,
-                     progress=lambda m: print("  " + m))
-            print("flash OK (sin reboot; ejecuta 'reboot' cuando proceda)")
+            hf.flash(img, args.name.encode(), args.mode, args.erase_type)
+            print("ok")
         elif cmd == "reboot":
             hf.reboot()
-            print("reboot enviado (sin ACK por diseño)")
+            print("ok")
         elif cmd == "msc":
             hf.enter_rom_msc()
-            print("0xD0 enviado; el SPL reinicia en MSC UBOOT1.00")
+            print("ok")
     except HidTimeout as e:
         cmd = getattr(e, "cmd", None)
         if cmd == 0xD1:
-            print("error: 0xD1 not implemented (power-cycle to load new SPL)", file=sys.stderr)
+            print("error: 0xD1 not implemented (unplug/replug to load new SPL)", file=sys.stderr)
         elif cmd == 0xD0:
             print("error: 0xD0 not implemented (running SPL too old)", file=sys.stderr)
         else:
