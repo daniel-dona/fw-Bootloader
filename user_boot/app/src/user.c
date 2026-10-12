@@ -364,6 +364,7 @@ void jl_su_erase()
     dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
     dev_g_ops->cmd_len = 1 + 1;
     set_remain_and_upgrade_rsp(JL_SU_CMD_ERASE);
+    return;
 
     /* log_info("%s() address %x %d\n", __func__, g_ops->erase.address, g_ops->erase.type); */
 
@@ -405,6 +406,7 @@ void jl_su_write_flash()
     dev_g_ops->rsp_status = (st == 0) ? JL_SU_CMD_SUSS : JL_SU_CMD_WRITE_ERROR;
     dev_g_ops->cmd_len = 1 + 1;
     set_remain_and_upgrade_rsp(JL_SU_CMD_WRITE);
+    return;
     jlfs_fseek(&upgrade_file, g_ops->write.address);
     u32 r = jlfs_write(&upgrade_file, g_ops->write.data, g_ops->write.data_length);
     if (r != g_ops->write.data_length) {
