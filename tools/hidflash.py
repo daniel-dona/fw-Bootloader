@@ -84,8 +84,8 @@ MAX_CRC_BLOCKS = (REPORT_SIZE - 8) // 2
 
 DEFAULT_DEVICE = "auto"           # descubrir hidraw por VID:PID 4c4a:4155 vía sysfs
 PRODUCT_NAME = "Custom JL uboot"  # iProduct del SPL propio (descriptor.c)
-JL_VID = "04C4A"
-JL_PID = "04155"
+JL_VID = "04244"
+JL_PID = "04C44"
 
 
 def find_hidraw(vid=JL_VID, pid=JL_PID, root="/sys/class/hidraw", product=None):

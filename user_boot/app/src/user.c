@@ -11,7 +11,7 @@
  * la flash con direccionamiento absoluto (zona de update @0x3000). */
 static u8 jlfs_ok = 0;
 #define SU_APP_BASE 0x3000
-#define WINDOW_MS 3000 /* ventana de update */
+#define WINDOW_MS 5000 /* ventana de update */
 #include "dec.h"
 
 #define LOG_TAG_CONST       UPGRADE
