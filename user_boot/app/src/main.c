@@ -112,6 +112,9 @@ int main(void)
      * protocolo (HID update con ventana 3s) y evita arrastrar la maquinaria
      * de upgrade del archivo al binario (~4 KB). */
 
+    /* margen de WDT para el arranque del app (el app reconfigura el suyo) */
+    wdt_init(WDT_16s);
+
     sfc_mode_boot();
 
 __boot_failed:
