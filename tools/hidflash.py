@@ -908,8 +908,15 @@ def main(argv=None):
             print("uuid     %s" % i["uuid"])
             rows = [(n, "0x%05X" % i["regions"][n], str(i["region_sizes"][n]))
                     for n in ("spl", "app", "isd")]
-            w = [max(len(c) for c in ("region", "base", "size")) + 2]
+            hdr = ("region", "base", "size")
+            w = [max([len(h)] + [len(r[k]) for r in rows]) + 2
+                 for k, h in enumerate(hdr)]
             sep = "+" + "+".join("-" * x for x in w) + "+"
+            print(sep)
+            print("|" + "|".join(h.center(x) for h, x in zip(hdr, w)) + "|")
+            print(sep)
+            for r in rows:
+                print("|" + "|".join(c.ljust(x) for c, x in zip(r, w)) + "|")
             print(sep)
             print("|" + "|".join(c.center(x) for c, x in zip(("region", "base", "size"), w)) + "|")
             print(sep)
