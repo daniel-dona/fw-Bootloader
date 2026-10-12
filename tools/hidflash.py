@@ -528,20 +528,24 @@ class HidFlash:
         param = struct.pack("<I", sdk_id)
         r = self._xact(CMD_DEVICE_CHECK, param)
         vid, pid, rsdk = struct.unpack("<4s16sI", r[:24])
-        return {"vid": vid, "pid": pid.rstrip(b"\x00"), "sdk_id": rsdk}
+        return {"vid": vid, "pid": pid.rstrip(b"\x00\xff"), "sdk_id": rsdk}
 
     def device_info(self):
-        """0xD1 (comando propio del SPL): identificacion completa.
+        """0xD1 (comando propio del SPL): identificacion completa + check/init.
         rsp: flash_id u32, capacity u32, spl_base u32, app_base u32,
              isd_base u32, version4 u32 (ASCII MSB-first), uuid 16 B."""
+        chk = self.device_check()
+        init = self.device_init()
         r = self._xact(0xD1)
         fid, cap, spl, app, isd, ver4 = struct.unpack("<6I", r[:24])
         uuid = r[24:40]
         version = bytes([ver4 >> 24 & 0xFF, ver4 >> 16 & 0xFF,
                          ver4 >> 8 & 0xFF, ver4 & 0xFF]).decode("ascii", "replace")
-        return {"flash_id": "0x%08X" % fid, "flash_capacity": cap,
-                "regions": {"spl": spl, "app": app, "isd": isd},
-                "commit": version, "uuid": uuid.hex()}
+        out = {"flash_id": "0x%08X" % fid, "flash_capacity": cap,
+               "regions": {"spl": spl, "app": app, "isd": isd},
+               "commit": version, "uuid": uuid.hex()}
+        out.update(chk); out.update(init)
+        return out
 
     def device_init(self, file_name=b"app_dir_head", mode=0):
         """0xC0: req file_name[16] + mode; rsp addr/len/eoffset/alignsize.
@@ -894,13 +898,12 @@ def main(argv=None):
     hf = _open_hw(args)
     try:
         if cmd == "info":
-            print(" check:", hf.device_check())
-            print(" init :", hf.device_init())
             i = hf.device_info()
-            print(" flash : %s, %d bytes (%.0f KB)" % (i["flash_id"], i["flash_capacity"], i["flash_capacity"] / 1024))
-            print(" uuid  :", i["uuid"])
-            print(" regiones:", i["regions"])
-            print(" commit:", i["commit"])
+            print("usb     : vid=%s pid=%s sdk_id=0x%08X" % (i["vid"].hex(), i["pid"].decode("ascii", "replace"), i["sdk_id"]))
+            print("flash   : id=%s size=%d" % (i["flash_id"], i["flash_capacity"]))
+            print("uuid    : %s" % i["uuid"])
+            print("regiones: spl=0x%05X app=0x%05X isd=0x%05X" % (i["regions"]["spl"], i["regions"]["app"], i["regions"]["isd"]))
+            print("commit  : %s" % i["commit"])
         elif cmd == "check":
             print(hf.device_check())
         elif cmd == "init":
