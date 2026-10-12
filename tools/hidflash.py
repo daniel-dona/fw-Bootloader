@@ -472,7 +472,10 @@ class HidrawTransport:
 
     def close(self):
         if self.fd is not None:
-            os.close(self.fd)
+            try:
+                os.close(self.fd)
+            except OSError:
+                pass
             self.fd = None
 
 
@@ -1009,8 +1012,8 @@ def main(argv=None):
     except CommandError as e:
         print("error de comando: %s" % e, file=sys.stderr)
         sys.exit(1)
-    except OSError as e:
-        print("error: device lost mid-operation (%s)" % e, file=sys.stderr)
+    except OSError:
+        print("error: device disconnected", file=sys.stderr)
         sys.exit(1)
     finally:
         hf.close()
