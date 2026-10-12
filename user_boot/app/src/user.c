@@ -5,6 +5,7 @@
 #include "atomic.h"
 #include "crc.h"
 #include "norflash.h"
+#include "spl_version.h"
 #include "delay.h"
 
 /* fallback RAW: si jlfs_fopen falla (sin JLFS), write/erase/crc operan sobre
@@ -137,6 +138,16 @@ typedef struct {
             u8 pid[16];
             u32 sdk_id;
         } device_check;
+
+        struct {
+            u32 flash_id;
+            u32 flash_capacity;
+            u32 spl_base;
+            u32 app_base;
+            u32 isd_base;
+            u32 version4;
+            u8  uuid[16];
+        } info;
     };
 } __attribute__((packed)) JL_SECTOR_COMMAND_DEV_ITEM;
 
@@ -286,6 +297,32 @@ void set_remain_and_upgrade_rsp(u8 cmd)
     upgrade_rsp(dev_g_ops, crc16_len + 2); //total length is data length + crc16 length
 }
 
+
+void jl_su_info()
+{
+    /* 0xD1: identificacion completa del chip/flash/layout */
+    struct flash_info_t *fi = get_flash_info();
+    const char *ver = SPL_GIT_SHORT;
+    u32 version4 = 0;
+    u8 *body = (u8 *)dev_g_ops + 6; /* la union empieza en +6 */
+    int i;
+
+    for (i = 0; i < 4 && ver[i]; i++) {
+        version4 |= (u32)((u8)ver[i]) << (24 - 8 * i);
+    }
+    memset(body, 0, 40);
+    memcpy(body + 0,  &fi->id, 4);
+    memcpy(body + 4,  &fi->capacity, 4);
+    memcpy(body + 8,  (u32[]){0x0}, 4);        /* spl_base  */
+    memcpy(body + 12, (u32[]){0x3000}, 4);     /* app_base  */
+    memcpy(body + 16, (u32[]){0x2CF0}, 4);     /* isd_base  */
+    memcpy(body + 20, &version4, 4);
+    memcpy(body + 24, fi->uuid, 16);
+
+    dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
+    dev_g_ops->cmd_len = 1 + 1 + 40;
+    set_remain_and_upgrade_rsp(0xD1);
+}
 
 void jl_su_device_init()
 {
@@ -462,6 +499,10 @@ void upgrade_loop()
         case JL_SU_CMD_DEVICE_CHECK:
             log_info("JL_SU_CMD_DEVICE_CHECK\n");
             jl_su_devcie_check();
+            break;
+
+        case 0xD1:
+            jl_su_info();
             break;
 
         case JL_SU_CMD_REBOOT:
