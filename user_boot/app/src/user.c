@@ -10,9 +10,8 @@
 
 /* fallback RAW: si jlfs_fopen falla (sin JLFS), write/erase/crc operan sobre
  * la flash con direccionamiento absoluto (zona de update @0x3000). */
-static u8 jlfs_ok = 0;
 #define SU_APP_BASE 0x3000
-#define WINDOW_MS 3000 /* ventana de update */
+#define WINDOW_MS 5000 /* ventana de update */
 #include "dec.h"
 
 #define LOG_TAG_CONST       UPGRADE
@@ -140,13 +139,13 @@ typedef struct {
         } device_check;
 
         struct {
-            u32 flash_id;
-            u32 flash_capacity;
-            u32 spl_base;
-            u32 app_base;
-            u32 isd_base;
-            u32 version4;
-            u8  uuid[16];
+            u32 flash_id;       /* JEDEC ID */
+            u32 flash_capacity; /* bytes */
+            u32 spl_base;       /* 0x0    : cabecera+SPL+isd (12K) */
+            u32 app_base;       /* 0x3000 : app */
+            u32 isd_base;       /* 0x2CF0 : isd_config */
+            u32 version4;       /* 4 primeros chars del commit */
+            u8  uuid[16];       /* UUID unico de la flash */
         } info;
     };
 } __attribute__((packed)) JL_SECTOR_COMMAND_DEV_ITEM;
@@ -300,11 +299,11 @@ void set_remain_and_upgrade_rsp(u8 cmd)
 
 void jl_su_info()
 {
-    /* 0xD1: identificacion completa del chip/flash/layout */
+    /* 0xD1 (comando propio): identificacion completa del chip/flash/layout */
     struct flash_info_t *fi = get_flash_info();
     const char *ver = SPL_GIT_SHORT;
     u32 version4 = 0;
-    u8 *body = (u8 *)dev_g_ops + 6; /* la union empieza en +6 */
+    u8 *body = (u8 *)dev_g_ops + 6; /* cuerpo: la union empieza en +6 */
     int i;
 
     for (i = 0; i < 4 && ver[i]; i++) {
@@ -316,20 +315,23 @@ void jl_su_info()
     memcpy(body + 8,  (u32[]){0x0}, 4);        /* spl_base  */
     memcpy(body + 12, (u32[]){0x3000}, 4);     /* app_base  */
     memcpy(body + 16, (u32[]){0x2CF0}, 4);     /* isd_base  */
-    memcpy(body + 20, &version4, 4);
-    memcpy(body + 24, fi->uuid, 16);
+    memcpy(body + 20, SPL_GIT_SHORT, 16);      /* commit completo, NUL-padded */
+    memcpy(body + 36, fi->uuid, 16);
 
     dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
-    dev_g_ops->cmd_len = 1 + 1 + 40;
+    dev_g_ops->cmd_len = 1 + 1 + 56;
     set_remain_and_upgrade_rsp(0xD1);
 }
 
 void jl_su_device_init()
 {
-    /* Sin JLFS en este producto (isd_config custom): reportar la zona RAW
-     * de update (0x3000..fin de flash) con align 4096. */
-    dev_g_ops->init.upgrade_addr = SU_APP_BASE;
-    dev_g_ops->init.upgrade_len = 0x100000 - SU_APP_BASE;
+    /* Direccionamiento ABSOLUTO: las direcciones de erase/write/crc del
+     * protocolo son de flash completa (0x0..0x100000). El host decide el
+     * destino y pedira --unsafe para la zona de sistema (<0x3000). INIT solo
+     * abre sesion y reporta la geometria. (el SPL corre en RAM: reescribir
+     * su copia en flash es seguro; fallo -> ROM MSC = recuperable) */
+    dev_g_ops->init.upgrade_addr = 0;
+    dev_g_ops->init.upgrade_len = 0x100000;
     dev_g_ops->init.upgrade_eoffset = 4096;
     dev_g_ops->init.flash_alignsize = 4096;
     dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
@@ -341,47 +343,27 @@ void jl_su_device_init()
 
 void jl_su_flash_crc()
 {
+    /* CRC por bloques leyendo la flash directamente (direccion absoluta) */
     u32 block_count = g_ops->crc_list.len / g_ops->crc_list.block_size;
     u32 l = flash_alignsize;
     u8 *p = get_global_buffer(l); //4K
 
-    if (!jlfs_ok) {
-        /* RAW: CRC por bloques leyendo la flash directamente */
-        for (int i = 0; i < block_count; i++) {
-            norflash_read(p, SU_APP_BASE + g_ops->crc_list.address + i * l, l);
-            dev_g_ops->crc_list.crc[i] = chip_crc16(p, l);
-        }
-        dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
-        dev_g_ops->cmd_len = 1 + 1 + block_count * 2;
-        set_remain_and_upgrade_rsp(JL_SU_CMD_FLASH_CRC);
-        return;
-    }
-    log_info("%s() address:%x len:%d block_size:%d block_count:%d\n",
-             __func__, g_ops->crc_list.address, g_ops->crc_list.len,
-             g_ops->crc_list.block_size, block_count);
-
-    jlfs_fseek(&upgrade_file, g_ops->crc_list.address);
     for (int i = 0; i < block_count; i++) {
-        jlfs_fread(&upgrade_file, p, l);
+        norflash_read(p, g_ops->crc_list.address + i * l, l);
         dev_g_ops->crc_list.crc[i] = chip_crc16(p, l);
-        log_info("%x ", dev_g_ops->crc_list.crc[i]);
     }
-    log_info("\n");
     dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
     dev_g_ops->cmd_len = 1 + 1 + block_count * 2;
-
     set_remain_and_upgrade_rsp(JL_SU_CMD_FLASH_CRC);
 }
+
 void jl_su_erase()
 {
-    if (!jlfs_ok) {
-        /* RAW: erase de sector en la zona de update */
-        norflash_eraser(WINBOND_SECTOR_ERASE, SU_APP_BASE + g_ops->erase.address);
-        dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
-        dev_g_ops->cmd_len = 1 + 1;
-        set_remain_and_upgrade_rsp(JL_SU_CMD_ERASE);
-        return;
-    }
+    /* RAW: erase de sector en direccion absoluta */
+    norflash_eraser(WINBOND_SECTOR_ERASE, g_ops->erase.address);
+    dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
+    dev_g_ops->cmd_len = 1 + 1;
+    set_remain_and_upgrade_rsp(JL_SU_CMD_ERASE);
 
     /* log_info("%s() address %x %d\n", __func__, g_ops->erase.address, g_ops->erase.type); */
 
@@ -418,14 +400,11 @@ void jl_su_erase()
 
 void jl_su_write_flash()
 {
-    if (!jlfs_ok) {
-        /* RAW: escritura absoluta en la zona de update */
-        u8 st = norflash_write(g_ops->write.data, SU_APP_BASE + g_ops->write.address, g_ops->write.data_length);
-        dev_g_ops->rsp_status = (st == 0) ? JL_SU_CMD_SUSS : JL_SU_CMD_WRITE_ERROR;
-        dev_g_ops->cmd_len = 1 + 1;
-        set_remain_and_upgrade_rsp(JL_SU_CMD_WRITE);
-        return;
-    }
+    /* RAW: escritura en direccion absoluta */
+    u8 st = norflash_write(g_ops->write.data, g_ops->write.address, g_ops->write.data_length);
+    dev_g_ops->rsp_status = (st == 0) ? JL_SU_CMD_SUSS : JL_SU_CMD_WRITE_ERROR;
+    dev_g_ops->cmd_len = 1 + 1;
+    set_remain_and_upgrade_rsp(JL_SU_CMD_WRITE);
     jlfs_fseek(&upgrade_file, g_ops->write.address);
     u32 r = jlfs_write(&upgrade_file, g_ops->write.data, g_ops->write.data_length);
     if (r != g_ops->write.data_length) {
@@ -456,6 +435,10 @@ void upgrade_loop()
 {
     dev_g_ops = (JL_SECTOR_COMMAND_DEV_ITEM *)dev_g_buf;//reply buf, 64 size is needed for usb compatibility later
 
+    /* verde PB09: señal de vida de la ventana (GPIO, 1=encendido) */
+    JL_PORTB->DIR &= ~BIT(9);
+    JL_PORTB->OUT |= BIT(9);
+
     /* Ventana de update: 3 s escuchando al host. Si llega un comando,
      * sesion sin timeout. Si no, cerrar USB y lanzar el app (sfc_mode_boot). */
     u32 window_ms = 0;
@@ -471,7 +454,9 @@ void upgrade_loop()
                 mdelay(10);
                 window_ms += 10;
                 if (window_ms >= WINDOW_MS) {
-                    break;  /* ventana agotada: lanzar el app */
+                    /* ventana agotada: apagar verde y lanzar el app */
+                    JL_PORTB->OUT &= ~BIT(9);
+                    break;
                 }
             }
             continue;
@@ -501,7 +486,7 @@ void upgrade_loop()
             jl_su_devcie_check();
             break;
 
-        case 0xD1:
+        case 0xD1: /* JL_CMD_INFO: identificacion completa */
             jl_su_info();
             break;
 
@@ -517,7 +502,7 @@ void upgrade_loop()
 #endif
             return;
 
-        case 0xD0: /* JL_SU_CMD_ENTER_ROM_MSC: reiniciar en MSC del ROM (sin Arduino) */
+        case 0xD0: /* JL_CMD_ENTER_ROM_MSC: boot-state del ROM + chip_reset */
             log_info("ENTER_ROM_MSC -> boot-state magic @0x10804\n");
             ut_devic_mode_close();
             usb_disable_for_ota();
@@ -537,6 +522,9 @@ void upgrade_loop()
 
 u8 user_check_upgrade(u32 jlfs_err)
 {
+#ifdef DIAG_NO_USB
+    return 0; /* diagnostico: saltar USB/ventana, probar arranque del app */
+#endif
     flash_alignsize = jlfs_get_flash_align_size();
     u32 flash_app_base_addr = jlfs_get_flash_app_base_addr();
     u32 flash_offset_size = jlfs_get_flash_eoffset_size();
@@ -548,7 +536,6 @@ u8 user_check_upgrade(u32 jlfs_err)
     /* Bloque de migracion uboot@64K eliminado: no aplica a este producto */
 
     u8 err = jlfs_fopen_by_name(&upgrade_file, "app_dir_head", 0);
-    jlfs_ok = !err;
     if (err) {
         log_info("fopen err\n");
         /* sin JLFS: seguir a USB update (enumeracion = senal de vida) */
@@ -558,6 +545,7 @@ u8 user_check_upgrade(u32 jlfs_err)
     }
 
     log_info("%s() 0x%x 0x%x\n", __func__, upgrade_file.addr, upgrade_file.size);
+
 
 #if (USB_MODE==1)
     usb_device_mode(0, HID_CLASS);

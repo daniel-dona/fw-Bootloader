@@ -533,14 +533,13 @@ class HidFlash:
     def device_info(self):
         """0xD1 (comando propio del SPL): identificacion completa + check/init.
         rsp: flash_id u32, capacity u32, spl_base u32, app_base u32,
-             isd_base u32, version4 u32 (ASCII MSB-first), uuid 16 B."""
+             isd_base u32, version[16], uuid 16 B."""
         chk = self.device_check()
         init = self.device_init()
         r = self._xact(0xD1)
-        fid, cap, spl, app, isd, ver4 = struct.unpack("<6I", r[:24])
-        uuid = r[24:40]
-        version = bytes([ver4 >> 24 & 0xFF, ver4 >> 16 & 0xFF,
-                         ver4 >> 8 & 0xFF, ver4 & 0xFF]).decode("ascii", "replace")
+        fid, cap, spl, app, isd = struct.unpack("<5I", r[:20])
+        version = r[20:36].rstrip(b"\x00").decode("ascii", "replace")
+        uuid = r[36:52]
         rgn = {"spl": spl, "app": app, "isd": isd}
         bounds = sorted(list(rgn.values()) + [cap])
         sizes = {n: bounds[bounds.index(b) + 1] - b for n, b in rgn.items()}
