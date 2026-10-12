@@ -805,7 +805,14 @@ def _open_hw(args):
     (cubre la ventana de 5 s y los ciclos de reset)."""
     deadline = time.time() + args.wait
     path = None if args.device == "auto" else args.device
+    if args.device == "auto":
+        print("esperando %s (hasta %ds)..." % (PRODUCT_NAME, args.wait),
+              file=sys.stderr)
+    announced = False
     while True:
+        if path is not None and not announced:
+            print("abierto %s" % path, file=sys.stderr)
+            announced = True
         if path is None:
             path = find_hidraw(product=PRODUCT_NAME)
             if path is None and time.time() >= deadline:
@@ -937,6 +944,19 @@ def main(argv=None):
         elif cmd == "msc":
             hf.enter_rom_msc()
             print("0xD0 enviado; el SPL reinicia en MSC UBOOT1.00")
+    except HidTimeout as e:
+        print("sin respuesta del SPL: %s" % e, file=sys.stderr)
+        print("Para entrar en la ventana del SPL hay que RESETEAR el hardware: "
+              "desenchufa y vuelve a enchufar el USB, y reintenta el comando "
+              "inmediatamente (la ventana dura 5 s).", file=sys.stderr)
+        sys.exit(1)
+    except CommandError as e:
+        print("error de comando: %s" % e, file=sys.stderr)
+        sys.exit(1)
+    except OSError as e:
+        print("el dispositivo desapareció a mitad de operación: %s" % e, file=sys.stderr)
+        print("(fin de ventana o reset del chip; reintenta)", file=sys.stderr)
+        sys.exit(1)
     finally:
         hf.close()
     return 0
