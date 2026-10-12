@@ -315,7 +315,7 @@ void jl_su_info()
     memcpy(body + 8,  (u32[]){0x0}, 4);        /* spl_base  */
     memcpy(body + 12, (u32[]){0x3000}, 4);     /* app_base  */
     memcpy(body + 16, (u32[]){0x2CF0}, 4);     /* isd_base  */
-    memcpy(body + 20, SPL_GIT_SHORT, 16);      /* commit completo, NUL-padded */
+    for (i = 0; i < 15 && ver[i]; i++) body[20 + i] = ver[i]; /* commit, NUL-padded */
     memcpy(body + 36, fi->uuid, 16);
 
     dev_g_ops->rsp_status = JL_SU_CMD_SUSS;

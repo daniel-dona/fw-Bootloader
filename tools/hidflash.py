@@ -530,6 +530,17 @@ class HidFlash:
         vid, pid, rsdk = struct.unpack("<4s16sI", r[:24])
         return {"vid": vid, "pid": pid.rstrip(b"\x00\xff"), "sdk_id": rsdk}
 
+    def region_crc(self, addr, size, block=4096):
+        """CRC16 de identificacion de la region: crc16 sobre la lista de CRCs
+        de bloque que devuelve el device (0xC4 por bloques de 4K)."""
+        packed = b""
+        end = addr + size
+        for off in range(addr, end, block):
+            n = min(block, end - off)          # ultimo chunk: el resto exacto
+            crcs = self.flash_crc(off, n, n)   # 1 bloque del tamano del chunk
+            packed += struct.pack("<%dH" % len(crcs), *crcs)
+        return crc16_xmodem(packed)
+
     def device_info(self):
         """0xD1 (comando propio del SPL): identificacion completa + check/init.
         rsp: flash_id u32, capacity u32, spl_base u32, app_base u32,
@@ -538,7 +549,7 @@ class HidFlash:
         init = self.device_init()
         r = self._xact(0xD1)
         fid, cap, spl, app, isd = struct.unpack("<5I", r[:20])
-        version = r[20:36].rstrip(b"\x00").decode("ascii", "replace")
+        version = r[20:36].split(b"\x00")[0].decode("ascii", "replace")
         uuid = r[36:52]
         rgn = {"spl": spl, "app": app, "isd": isd}
         bounds = sorted(list(rgn.values()) + [cap])
@@ -905,9 +916,13 @@ def main(argv=None):
             print("usb      vid=%s pid=%s sdk_id=0x%08X" % (i["vid"].hex(), i["pid"].decode("ascii", "replace"), i["sdk_id"]))
             print("flash    id=%s size=%d" % (i["flash_id"], i["flash_capacity"]))
             print("uuid     %s" % i["uuid"])
-            rows = [(n, "0x%05X" % i["regions"][n], str(i["region_sizes"][n]))
-                    for n in ("spl", "app", "isd")]
-            hdr = ("region", "base", "size")
+            ordered = sorted(i["regions"].items(), key=lambda kv: kv[1])
+            rows = []
+            for n, base in ordered:
+                size = i["region_sizes"][n]
+                crc = hf.region_crc(base, size)
+                rows.append((n, "0x%05X" % base, str(size), "0x%04X" % crc))
+            hdr = ("region", "base", "size", "crc")
             w = [max([len(h)] + [len(r[k]) for r in rows]) + 2
                  for k, h in enumerate(hdr)]
             sep = "+" + "+".join("-" * x for x in w) + "+"
