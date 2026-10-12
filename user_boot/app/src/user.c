@@ -493,7 +493,10 @@ void upgrade_loop()
             break;
 
         case JL_SU_CMD_REBOOT:
-            log_info("JL_SU_CMD_REBOOT\n");
+            dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
+            dev_g_ops->cmd_len = 1 + 1;
+            set_remain_and_upgrade_rsp(JL_SU_CMD_REBOOT);
+            mdelay(200); /* dejar al host leer el ACK antes de morir */
             ut_devic_mode_close();
             usb_disable_for_ota();
 #if(USE_UPGRADE_MAGIC)
@@ -505,7 +508,10 @@ void upgrade_loop()
             return;
 
         case 0xD0: /* JL_CMD_ENTER_ROM_MSC: boot-state del ROM + chip_reset */
-            log_info("ENTER_ROM_MSC -> boot-state magic @0x10804\n");
+            dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
+            dev_g_ops->cmd_len = 1 + 1;
+            set_remain_and_upgrade_rsp(0xD0);
+            mdelay(200); /* dejar al host leer el ACK antes de morir */
             ut_devic_mode_close();
             usb_disable_for_ota();
             {

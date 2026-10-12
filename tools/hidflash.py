@@ -629,18 +629,12 @@ class HidFlash:
         return True
 
     def reboot(self):
-        """0xCA: el SPL NO responde (chip_reset). Se tolera el silencio."""
-        try:
-            self._xact(CMD_REBOOT, expect_silence=True)
-        except HidTimeout:
-            pass  # esperado: reset sin ACK
+        """0xCA: ACK SUSS y reset."""
+        self._xact(CMD_REBOOT)
 
     def enter_rom_msc(self):
-        """0xD0: boot-state magic del ROM + chip_reset -> MSC UBOOT1.00. Sin ACK."""
-        try:
-            self._xact(CMD_ENTER_ROM_MSC, expect_silence=True)
-        except HidTimeout:
-            pass  # esperado: reset sin ACK
+        """0xD0: ACK SUSS y reset a MSC del ROM."""
+        self._xact(CMD_ENTER_ROM_MSC)
 
     def updata_dual_bank_crc(self, crc, version=0):
         """0xCB: publica el CRC del banco activo (DUAL_BANK_MODE)."""
