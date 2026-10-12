@@ -206,7 +206,7 @@ def main(argv):
             path = a
             i += 1
     if path is None:
-        path = '/home/dani/steam_deck_mandos/dump_flash.bin'
+        path = 'tools/data/dump_flash_factory.bin'
 
     lines = []
 

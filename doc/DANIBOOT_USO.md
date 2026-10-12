@@ -19,7 +19,7 @@ pre-build → `spl_version.h`).
 ## Compilar
 
 ```bash
-cd /home/dani/steam_deck_mandos/custom_uboot/fw-Bootloader
+cd custom_uboot/fw-Bootloader  # raiz del repo
 make spl        # compila firmware + empaqueta el banco .boot (sin Wine)
 make image      # compone la imagen de 1 MiB (dump fábrica + SPL + isd)
 make validate   # reproduce la validación del ROM (CRC en cadena) -> RESULT: OK
@@ -32,7 +32,7 @@ make flash      # (alternativa) flashea por jluboottool, requiere ROM MSC
   (83 B @0x2CF0) es **imprescindible**: con una isd custom el app se cuelga en su init.
   Para componer sin tocar la isd: `tools/compose_image.py --isd none`.
 
-## Ciclo de flasheo por HID (sin Arduino)
+## Ciclo de flasheo por HID
 
 Requiere root para /dev/hidrawN. El chip en marcha como DS4 hay que **reiniciarlo**
 (desenchufar/enchufar) para entrar en la ventana.
@@ -41,7 +41,7 @@ Requiere root para /dev/hidrawN. El chip en marcha como DS4 hay que **reiniciarl
 para hidraw sin root:
 
 ```bash
-cd /home/dani/steam_deck_mandos/custom_uboot/fw-Bootloader
+cd custom_uboot/fw-Bootloader  # raiz del repo
 make venv      # crea .venv (solo stdlib, sin dependencias externas)
 make udev      # requiere sudo esta única vez
 ```
@@ -54,7 +54,7 @@ da igual si el chip está en la ventana, en la fase de app o reiniciándose:
 
 ```bash
 PY=.venv/bin/python
-cd /home/dani/steam_deck_mandos/custom_uboot/fw-Bootloader
+cd custom_uboot/fw-Bootloader  # raiz del repo
 $PY tools/hidflash.py check                         # abre sesión e identifica el chip
 ```
 
@@ -110,9 +110,7 @@ $PY tools/hidflash.py msc      # 0xD0: reinicio a ROM MSC (rescate/reflasheo del
 Si el SPL se corrompe, el ROM entra solo en **MSC UBOOT1.00** (`4c4a:2342`):
 
 ```bash
-sudo /home/dani/steam_deck_mandos/.venv/bin/python \
-  /home/dani/steam_deck_mandos/.tmp/jl-uboot-tool/jluboottool.py \
-  --device /dev/sg0 --chip br23
+sudo python3 .tmp/jl-uboot-tool/jluboottool.py --device /dev/sg0 --chip br23
 # interactivamente: write 0 imagen.bin / read ... / reset 1
 ```
 

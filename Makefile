@@ -31,8 +31,8 @@ validate:
 	$(PY) tools/validate_image.py $(IMAGE)
 
 flash:
-	{ cat /tmp/sudo; printf 'write 0 $(CURDIR)/$(IMAGE)\nexit\n'; } | \
-	  sudo -S $(PY) .tmp/jl-uboot-tool/jluboottool.py --device /dev/$(DEVICE) --chip br23
+	sudo $(PY) .tmp/jl-uboot-tool/jluboottool.py --device /dev/$(DEVICE) --chip br23 \
+	  --cmds "write 0 $(CURDIR)/$(IMAGE)"
 
 clean:
 	$(MAKE) -C $(FWDIR) clean

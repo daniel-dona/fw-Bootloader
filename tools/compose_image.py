@@ -5,7 +5,7 @@ compose_t3.py -- T3.2: compose the candidate 1 MiB flash image, 100% offline:
 
   * base: dump_flash.bin (factory dump, md5 a3dc6827ac94333d7bf52407b8ba29e3)
   * SPL region @0xA0 (JLFS entry @0x20 -> uboot.boot): replace factory bank
-    (11344 B) with OUR bank (/tmp/bm/t11/uboot_banklink.boot, 8432 B), encrypted
+    (11344 B) with OUR bank (tools/ default), encrypted
     with the CONFIRMED scheme (descramble_bankcb / "bankcb"):
         header 16 B @0xA0 : jl_enc_cipher(key=0xFFFF)  (single run)
         payload @0xB0     : jl_enc_cipher(key=0xFFFF)  (single continuous run)
@@ -17,7 +17,7 @@ compose_t3.py -- T3.2: compose the candidate 1 MiB flash image, 100% offline:
     (also re-encrypts the 32-byte descriptor @0x40 with the new length 115).
   * app area @0x3000+ and everything else untouched.
 
-No hardware is touched; output goes to /tmp/bm/t11/own_fix_full.bin.
+No hardware is touched.
 """
 
 import hashlib

@@ -502,7 +502,7 @@ void upgrade_loop()
 #endif
             return;
 
-        case 0xD0: /* JL_SU_CMD_ENTER_ROM_MSC: reiniciar en MSC del ROM (sin Arduino) */
+        case 0xD0: /* JL_CMD_ENTER_ROM_MSC: boot-state del ROM + chip_reset */
             log_info("ENTER_ROM_MSC -> boot-state magic @0x10804\n");
             ut_devic_mode_close();
             usb_disable_for_ota();

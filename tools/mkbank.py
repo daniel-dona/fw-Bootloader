@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 """mkbank.py <uboot.bin> <salida.boot> — empaqueta uboot.bin en el formato banco
-plano que el ROM espera (identico a BankLink.exe, verificado T1/T10):
+plano que el ROM espera:
   hdr 16 B: u16 ver=1 | u16 size | u32 load=0x4000 | u32 off=0x10 | u16 crc16(payload) | u16 crc16(hdr[0:14])
   payload @0x10
 """
 import sys, struct
-sys.path.insert(0, '/home/dani/steam_deck_mandos/.tmp/jl-misctools/firmware')
+sys.path.insert(0, __file__.rsplit('/', 1)[0])
 from jltech.crc import jl_crc16
 
 src, dst = sys.argv[1], sys.argv[2]

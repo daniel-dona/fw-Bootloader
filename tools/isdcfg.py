@@ -7,7 +7,7 @@ Reverse-engineered from:
   * uboot.elf (fw-Bootloader-main, br23) disassembly:
       - dec_isd_cfg_ini()   @ 0x42ee   (implementation closed in uboot.a)
       - jlfs_get_isd_cfg_ptr() @ 0x42b0
-  * Device ground truth: /home/dani/steam_deck_mandos/dump_flash.bin
+  * Device ground truth: dump de fabrica (tools/data/dump_flash_factory.bin)
       - flash descriptor @ 0x40  (32 bytes, ENC-scrambled, key 0xFFFF)
       - isd_config blob  @ 0x2CF0 (83 bytes)
   * chipkey blob format: jl-misctools/firmware/jltech/chipkeybin.py (same algorithm)
@@ -61,7 +61,7 @@ import struct
 import sys
 from collections import OrderedDict
 
-DEFAULT_FLASH = "/home/dani/steam_deck_mandos/dump_flash.bin"
+DEFAULT_FLASH = "tools/data/dump_flash_factory.bin"
 DESC_OFF = 0x40            # flash offset of the 32-byte isd_config descriptor
 ISD_OFF = 0x2CF0           # flash offset of the isd_config blob (device)
 ISD_SIZE = 83              # blob length on the device
@@ -414,12 +414,12 @@ def run_tests(flash_path=DEFAULT_FLASH):
     check("patched: rest of sector erased with 0xFF",
           patched[0x2CF0 + len(pblob):0x3000] == b"\xFF" * (0x3000 - 0x2CF0 - len(pblob)))
 
-    with open("/tmp/bm/isd_config_custom.bin", "wb") as f:
+    with open("isd_config_custom.bin", "wb") as f:
         f.write(blob2)
-    with open("/tmp/bm/dump_flash_custom_isdcfg_candidate.bin", "wb") as f:
+    with open("dump_flash_custom_isdcfg_candidate.bin", "wb") as f:
         f.write(patched)
-    print("  wrote /tmp/bm/isd_config_custom.bin (%d bytes)" % len(blob2))
-    print("  wrote /tmp/bm/dump_flash_custom_isdcfg_candidate.bin (candidate image, NOT flashed)")
+    print("  wrote isd_config_custom.bin (%d bytes)" % len(blob2))
+    print("  wrote dump_flash_custom_isdcfg_candidate.bin (candidate image, NOT flashed)")
 
     print("RESULT: %s" % ("ALL TESTS PASSED" if ok else "FAILURES PRESENT"))
     return 0 if ok else 1
@@ -444,7 +444,7 @@ def main(argv=None):
                    help="chipkey (re-encodes the chipkey blob; default 0x05F4)")
     p.add_argument("--chipkey-block-from", default=DEFAULT_FLASH,
                    help="copy the raw chipkey block from this flash image instead")
-    p.add_argument("--out", default="/tmp/bm/isd_config_out.bin")
+    p.add_argument("--out", default="isd_config_out.bin")
     p.add_argument("--no-terminator", action="store_true")
 
     p = sub.add_parser("descriptor", help="decode the isd_config descriptor @0x40")

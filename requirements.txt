@@ -1,2 +1,2 @@
-# DaniBoot no necesita dependencias externas (solo stdlib).
-# El fichero existe para reproducir el entorno: make venv
+crcmod
+pycryptodome
