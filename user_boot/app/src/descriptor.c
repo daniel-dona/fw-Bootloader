@@ -54,8 +54,8 @@ static const u8 product_string[] = {
     'e', 0x00,
 };
 static const u8 MANUFACTURE_STR[] = {
-    34,         //该描述符的长度为34字节
-    0x03,       //字符串描述符的类型编码为0x03
+    34,         // the length of this descriptor is 34 bytes
+    0x03,       // the type code of a string descriptor is 0x03
     0x4a, 0x00, //J
     0x69, 0x00, //i
     0x65, 0x00, //e
@@ -79,7 +79,7 @@ static const u8 sConfigDescriptor[] = {	//<Config Descriptor
     USB_DT_CONFIG_SIZE,    //bLength
     USB_DT_CONFIG,    //DescriptorType : ConfigDescriptor
     0, 0, //TotalLength
-    0,//bNumInterfaces: 在set_descriptor函数里面计算
+    0,//bNumInterfaces: calculated in the set_descriptor function
     0x01,    //bConfigurationValue - ID of this configuration
     0x00,    //Unused
     0x80,    //Attributes:Bus Power

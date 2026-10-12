@@ -1,9 +1,9 @@
 #include "typedef.h"
 
 #ifdef __DEBUG
-const char libs_debug AT(.LOG_TAG_CONST) = TRUE; //打印总开关
+const char libs_debug AT(.LOG_TAG_CONST) = TRUE; //print master switch
 #else
-const char libs_debug AT(.LOG_TAG_CONST) = FALSE; //打印总开关
+const char libs_debug AT(.LOG_TAG_CONST) = FALSE; //print master switch
 #endif
 
 #define  CONFIG_DEBUG_LIBS(X)   (X & libs_debug)

@@ -20,7 +20,7 @@ const struct flash_wp_arg wp[] = {
         .wp_array[1].sr2 = 0x0,
     },
 };
-void flash_set_wp(u32 flash_id, u32 addr)//addr 是想要保护的地址
+void flash_set_wp(u32 flash_id, u32 addr)//addr is the address to be protected
 {
     const struct flash_wp_arg *p = NULL;
     for (int i = 0 ; i < ARRAY_SIZE(wp); i++) {

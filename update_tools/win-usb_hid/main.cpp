@@ -75,7 +75,7 @@ uint16_t *getBufferCrcList(const char *fileBuf, uint32_t blockCount,
 
 
 
-//上位机结构体
+// host tool struct
 typedef struct {
     u8 syncdata0;
     u8 syncdata1;
@@ -88,13 +88,13 @@ typedef struct {
         } __attribute__((packed)) device_check;
 
         struct {
-            u32 address;		// 烧写FLASH地址
-            u32 data_length;    //烧写长度
-            u8  data[0];		// 烧写数据
+            u32 address;		// flash write address
+            u32 data_length;    // write length
+            u8  data[0];		// write data
         } __attribute__((packed)) write;
 
         struct {
-            u32 address;    //需要对齐
+            u32 address;    // must be aligned
             u32 type;
         } __attribute__((packed)) erase;
 
@@ -111,7 +111,7 @@ typedef struct {
     };
 } __attribute__((packed)) JL_SECTOR_COMMAND_ITEM;
 
-//设备结构体
+// device struct
 typedef struct {
     u8 syncdata0;
     u8 syncdata1;
@@ -147,7 +147,7 @@ hid_device *handle;
 
 
 
-//10进制，注意要与上位机一致，不然无法升级
+// decimal, note: must match the host tool, otherwise the upgrade will fail
 uint32_t communication_key = 12345678;
 
 void decodeCommand(uint8_t *buf, uint32_t len)

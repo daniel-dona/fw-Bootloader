@@ -24,9 +24,9 @@
 #define     OS_CPU_ID       0
 
 static char *const emu_msg[32] = {
-    "system excption",		//[31]: system_emu 非内核异常, 属于系统异常, 需要读取上一级系统的emu_msg获取异常信息
-    "icache excption",		//[30]: icache emu, icache异常, 需要读取icache的emu_msg获取异常信息;
-    "dcache excption",		//[29]: dcache emu, dcache异常, 需要读取dcache的emu_msg获取异常信息;
+    "system excption",		//[31]: system_emu is a non-kernel exception, belongs to system exceptions, need to read the emu_msg of the upper-level system to get the exception info
+    "icache excption",		//[30]: icache emu, icache exception, need to read the emu_msg of icache to get the exception info;
+    "dcache excption",		//[29]: dcache emu, dcache exception, need to read the emu_msg of dcache to get the exception info;
 
     //[28:21]: Reverved
     "reserved",		//[28]
@@ -38,11 +38,11 @@ static char *const emu_msg[32] = {
     "reserved",		//[22]
     "reserved",		//[21]
 
-    "fpu_inv_err",	//[20]: 浮点NaN异常
-    "fpu_inf_err",	//[19]: fpu_inf_err, 浮点无穷大异常;
-    "fpu_tiny_err", //[18]: fpu_tiny_err, 浮点下溢异常;
-    "fpu_huge_err",	//[17]: fpu_huge_err, 浮点上溢异常;
-    "fpu_ine_err",	//[16]: fpu_ine_err, 浮点不精确异常;
+    "fpu_inv_err",	//[20]: floating point NaN exception
+    "fpu_inf_err",	//[19]: fpu_inf_err, floating point infinity exception;
+    "fpu_tiny_err", //[18]: fpu_tiny_err, floating point underflow exception;
+    "fpu_huge_err",	//[17]: fpu_huge_err, floating point overflow exception;
+    "fpu_ine_err",	//[16]: fpu_ine_err, floating point inexact exception;
 
     //[15:9]: Reverved
     "reserved",		//[15]
@@ -53,18 +53,18 @@ static char *const emu_msg[32] = {
     "reserved",		//[10]
     "reserved",		//[9]
 
-    "etm check point 0 err ",	//[8]: ETM检测异常, PC trace;
+    "etm check point 0 err ",	//[8]: ETM detection exception, PC trace;
 
     //[7:5]: Reverved
     "reserved",		//[7]
     "reserved",		//[6]
     "reserved",		//[5]
 
-    "pc_limit",		//[4]: PC越界异常, 需要配置PC范围寄存器[LIM_PC0_H, LIM_PC0_L], [LIM_PC1_H, LIM_PC1_L], [LIM_PC2_H, LIM_PC2_L];
-    "stack overflow err",		//[3]: 栈溢出异常, 需要配置栈范围寄存器[EMU_SSP_H, EMU_SSP_L][EMU_USP_H, EMU_USP_L];
-    "div0_err",		//[2]: div0, 除0异常;
-    "illegal_err",	//[1]: illeg, 非法指令异常;
-    "misalign_err",	//[0]: misalign, 不对齐异常, 不可屏蔽;
+    "pc_limit",		//[4]: PC out-of-range exception, need to configure the PC range registers [LIM_PC0_H, LIM_PC0_L], [LIM_PC1_H, LIM_PC1_L], [LIM_PC2_H, LIM_PC2_L];
+    "stack overflow err",		//[3]: stack overflow exception, need to configure the stack range registers [EMU_SSP_H, EMU_SSP_L][EMU_USP_H, EMU_USP_L];
+    "div0_err",		//[2]: div0, division by zero exception;
+    "illegal_err",	//[1]: illeg, illegal instruction exception;
+    "misalign_err",	//[0]: misalign, unaligned access exception, not maskable;
 };
 
 #define _EMU_CON				q32DSP(OS_CPU_ID)->EMU_CON

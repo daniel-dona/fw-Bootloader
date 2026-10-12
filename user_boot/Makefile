@@ -1,11 +1,12 @@
-# 总的 Makefile，用于调用目录下各个子工程对应的 Makefile
-# 注意： Linux 下编译方式：
-# 1. 从 http://pkgman.jieliapp.com/doc/all 处找到下载链接
-# 2. 下载后，解压到 /opt/jieli 目录下，保证
-#   /opt/jieli/common/bin/clang 存在（注意目录层次）
-# 3. 确认 ulimit -n 的结果足够大（建议大于8096），否则链接可能会因为打开文件太多而失败
-#   可以通过 ulimit -n 8096 来设置一个较大的值
-# 支持的目标
+# Top-level Makefile, used to invoke the Makefile of each sub-project under this directory
+# Note: How to build on Linux:
+# 1. Find the download link at http://pkgman.jieliapp.com/doc/all
+# 2. After downloading, extract it under the /opt/jieli directory, making sure that
+#   /opt/jieli/common/bin/clang exists (note the directory hierarchy)
+# 3. Make sure the result of ulimit -n is large enough (recommended greater than 8096),
+#   otherwise linking may fail because too many files are opened
+#   You can set a larger value with ulimit -n 8096
+# Supported targets
 # make bd19_uboot
 # make sh54_uboot
 # make br34_uboot

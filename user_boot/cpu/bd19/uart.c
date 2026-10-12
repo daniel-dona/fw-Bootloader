@@ -22,7 +22,7 @@ void putchar(char a)
     while (((DEBUG_UART->CON0 & BIT(15)) == 0) && (0 != i)) {  //TX IDLE
         i--;
     }
-    DEBUG_UART->CON0 |= BIT(13);  //清Tx pending
+    DEBUG_UART->CON0 |= BIT(13);  //clear Tx pending
 
     DEBUG_UART->BUF = a;
     __asm__ volatile("csync");
@@ -136,8 +136,8 @@ void ut_device_mode(const char *ut_tx, const char *ut_rx, u32 baud)
         JL_UART0->RXEADR = (u32)ut_up_buf + UT_UP_BUF_SIZE;
         JL_UART0->RXCNT = UT_UP_BUF_SIZE;
         JL_UART0->OTCNT = UT_UP_BAUD_CLK / 1000; //1ms
-        JL_UART0->CON0 |= BIT(5);   //OT中断
-        JL_UART0->CON0 |= BIT(6);   //启动DMA
+        JL_UART0->CON0 |= BIT(5);   //OT interrupt
+        JL_UART0->CON0 |= BIT(6);   //start DMA
         JL_UART0->CON0 |= BIT(13) | BIT(12) | BIT(10) | BIT(1) | BIT(0);
     }
 }

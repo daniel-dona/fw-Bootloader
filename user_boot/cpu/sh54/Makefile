@@ -1,19 +1,20 @@
 
-# make 编译并下载
-# make VERBOSE=1 显示编译详细过程
-# make clean 清除编译临时文件
+# make build and download
+# make VERBOSE=1 show the detailed build process
+# make clean remove temporary build files
 #
-# 注意： Linux 下编译方式：
-#     1. 从 http://pkgman.jieliapp.com/doc/all 处找到下载链接
-#     2. 下载后，解压到 /opt/jieli 目录下，保证
-#       /opt/jieli/common/bin/clang 存在（注意目录层次）
-#     3. 确认 ulimit -n 的结果足够大（建议大于8096），否则链接可能会因为打开文件太多而失败
-#       可以通过 ulimit -n 8096 来设置一个较大的值
+# Note: how to build on Linux:
+#     1. Find the download link from http://pkgman.jieliapp.com/doc/all
+#     2. After downloading, extract it to the /opt/jieli directory, ensuring that
+#       /opt/jieli/common/bin/clang exists (note the directory hierarchy)
+#     3. Make sure the result of ulimit -n is large enough (recommended greater than 8096),
+#       otherwise linking may fail because too many files are opened
+#       A larger value can be set via ulimit -n 8096
 #
 
-# 工具路径设置
+# Tool path configuration
 ifeq ($(OS), Windows_NT)
-# Windows 下工具链位置
+# Toolchain location on Windows
 TOOL_DIR := C:/JL/pi32/bin
 CC    := clang.exe
 CXX   := clang.exe
@@ -24,14 +25,14 @@ RM    := rm -rf
 
 SYS_LIB_DIR := C:/JL/pi32/libc
 SYS_INC_DIR := C:/JL/pi32/include/libc
-EXT_CFLAGS  := # Windows 下不需要 -D__SHELL__
+EXT_CFLAGS  := # -D__SHELL__ is not needed on Windows
 export PATH:=$(TOOL_DIR);$(PATH)
 
-## 后处理脚本
+## Post-build script
 POST_SCRIPT     := ..\..\cpu\sh54\output\download.bat
 RUN_POST_SCRIPT := $(POST_SCRIPT)
 else
-# Linux 下工具链位置
+# Toolchain location on Linux
 TOOL_DIR := /opt/jieli/pi32/bin
 CC    := clang
 CXX   := clang
@@ -45,10 +46,10 @@ export OBJSIZEDUMP := $(TOOL_DIR)/objsizedump
 
 SYS_LIB_DIR := $(TOOL_DIR)/../lib
 SYS_INC_DIR := $(TOOL_DIR)/../include
-EXT_CFLAGS  := -D__SHELL__ # Linux 下需要这个保证正确处理 download.c
+EXT_CFLAGS  := -D__SHELL__ # needed on Linux to ensure download.c is handled correctly
 export PATH:=$(TOOL_DIR):$(PATH)
 
-## 后处理脚本
+## Post-build script
 POST_SCRIPT     := ../../cpu/sh54/output/download.sh
 RUN_POST_SCRIPT := bash $(POST_SCRIPT)
 endif
@@ -57,15 +58,15 @@ CC  := $(TOOL_DIR)/$(CC)
 CXX := $(TOOL_DIR)/$(CXX)
 LD  := $(TOOL_DIR)/$(LD)
 AR  := $(TOOL_DIR)/$(AR)
-# 输出文件设置
+# Output file configuration
 OUT_ELF   := ../../cpu/sh54/output/uboot.elf
 OBJ_FILE  := $(OUT_ELF).objs.txt
-# 编译路径设置
+# Build path configuration
 BUILD_DIR := objs
-# 工程路径前缀
+# Project path prefix
 ROOT_PREFIX := ../..
 
-# 编译参数设置
+# Compiler flags configuration
 CFLAGS := \
 	-target pi32 \
 	-integrated-as \
@@ -98,11 +99,11 @@ CFLAGS := \
 	-g \
 
 
-# C++额外的编译参数
+# Extra C++ compiler flags
 CXXFLAGS :=
 
 
-# 宏定义
+# Macro definitions
 DEFINES := \
 	-D__CPU_sh54 \
 	-DENTRY_ADDR=0x1000 \
@@ -112,9 +113,9 @@ DEFINES := \
 	-DUSB_MODE=1 \
 
 
-DEFINES += $(EXT_CFLAGS) # 额外的一些定义
+DEFINES += $(EXT_CFLAGS) # a few extra definitions
 
-# 头文件搜索路径
+# Header file search paths
 INCLUDES := \
 	-I../../app \
 	-I../../app/inc \
@@ -128,7 +129,7 @@ INCLUDES := \
 	-I$(SYS_INC_DIR) \
 
 
-# 需要编译的 .c 文件
+# .c files to compile
 c_SRC_FILES := \
 	../../app/src/descriptor.c \
 	../../app/src/flash_wp.c \
@@ -142,27 +143,27 @@ c_SRC_FILES := \
 	../../cpu/sh54/uart.c \
 
 
-# 需要编译的 .S 文件
+# .S files to compile
 S_SRC_FILES :=
 
 
-# 需要编译的 .s 文件
+# .s files to compile
 s_SRC_FILES :=
 
 
-# 需要编译的 .cpp 文件
+# .cpp files to compile
 cpp_SRC_FILES :=
 
 
-# 需要编译的 .cc 文件
+# .cc files to compile
 cc_SRC_FILES :=
 
 
-# 需要编译的 .cxx 文件
+# .cxx files to compile
 cxx_SRC_FILES :=
 
 
-# 链接参数
+# Linker flags
 LFLAGS := \
 	--plugin-opt=-inline-threshold=5 \
 	--gc-sections \
@@ -216,15 +217,15 @@ else
 QUITE := @
 endif
 
-# 一些旧的 make 不支持 file 函数，需要 make 的时候指定 LINK_AT=0 make
+# Some older versions of make do not support the file function; in that case specify LINK_AT=0 when running make
 LINK_AT ?= 1
 
-# 表示下面的不是一个文件的名字，无论是否存在 all, clean, pre_build 这样的文件
-# 还是要执行命令
+# The following are not file names; regardless of whether files such as all, clean, pre_build exist,
+# the commands will still be executed
 # see: https://www.gnu.org/software/make/manual/html_node/Phony-Targets.html
 .PHONY: all clean pre_build
 
-# 不要使用 make 预设置的规则
+# Do not use make's predefined suffix rules
 # see: https://www.gnu.org/software/make/manual/html_node/Suffix-Rules.html
 .SUFFIXES:
 

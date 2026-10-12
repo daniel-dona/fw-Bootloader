@@ -169,14 +169,14 @@ struct gpio_platform_data {
 /**
  * @brief usb_iomode
  *
- * @param enable 1，使能；0，关闭
+ * @param enable 1 = enable, 0 = disable
  */
 void usb_iomode(u32 enable);
 /**
  * @brief gpio_direction_input
  *
- * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00
- * @param dir 1，输入；0，输出
+ * @param gpio refer to macro IO_PORTx_xx, e.g. IO_PORTA_00
+ * @param dir 1 = input, 0 = output
  *
  * @return
  */
@@ -186,8 +186,8 @@ int gpio_set_direction(u32 gpio, u32 dir);
 /**
  * @brief gpio_direction_input
  *
- * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00
- * @param value 1，输出1,  0，输出0
+ * @param gpio refer to macro IO_PORTx_xx, e.g. IO_PORTA_00
+ * @param value 1 = output 1, 0 = output 0
  *
  * @return
  */
@@ -197,9 +197,9 @@ int gpio_set_output_value(u32 gpio, u32 dir);
  * @brief gpio_dir
  *
  * @param gpio [GPIOA GPIOB GPIOC GPIOD GPIOR GPIOUSB]
- * @param start [0-15]，GPIOR[0-3]，GPIOUSB[0-1]
- * @param len  [0-15]，GPIOR[0-3]，GPIOUSB[0-1]
- * @param dat 1，输入；0，输出
+ * @param start [0-15],GPIOR[0-3],GPIOUSB[0-1]
+ * @param len  [0-15],GPIOR[0-3],GPIOUSB[0-1]
+ * @param dat 1 = input, 0 = output
  *
  * @return
  */
@@ -208,8 +208,8 @@ u32 gpio_dir(u32 gpio, u32 start, u32 len, u32 dat, enum gpio_op_mode op);
 /**
  * @brief gpio_direction_output
  *
- * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00
- * @param value 1，输出1；0，输出0
+ * @param gpio refer to macro IO_PORTx_xx, e.g. IO_PORTA_00
+ * @param value 1 = output 1, 0 = output 0
  *
  * @return
  */
@@ -219,9 +219,9 @@ int gpio_direction_output(u32 gpio, int value);
  * @brief gpio_out
  *
  * @param gpio [GPIOA GPIOB GPIOC GPIOD GPIOR GPIOUSB]
- * @param start [0-15]，GPIOR[0-3]，GPIOUSB[0-1]
- * @param len  [0-15]，GPIOR[0-3]，GPIOUSB[0-1]
- * @param dat 1，输入；0，输出
+ * @param start [0-15],GPIOR[0-3],GPIOUSB[0-1]
+ * @param len  [0-15],GPIOR[0-3],GPIOUSB[0-1]
+ * @param dat 1 = input, 0 = output
  *
  * @return
  */
@@ -230,8 +230,8 @@ u32 gpio_out(u32 gpio, u32 start, u32 len, u32 dat);
 /**
  * @brief gpio_set_pull_up
  *
- * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00
- * @param value 1，上拉；0，不上拉
+ * @param gpio refer to macro IO_PORTx_xx, e.g. IO_PORTA_00
+ * @param value 1 = pull-up, 0 = no pull-up
  *
  * @return
  */
@@ -242,9 +242,9 @@ int gpio_set_pull_up(u32 gpio, int value);
  * @brief gpio_set_pu
  *
  * @param gpio [GPIOA GPIOB GPIOC GPIOD GPIOR GPIOUSB]
- * @param start [0-15]，GPIOR[0-3]，GPIOUSB[0-1]
- * @param len  [0-15]，GPIOR[0-3]，GPIOUSB[0-1]
- * @param dat 1，上拉；0，不上拉
+ * @param start [0-15],GPIOR[0-3],GPIOUSB[0-1]
+ * @param len  [0-15],GPIOR[0-3],GPIOUSB[0-1]
+ * @param dat 1 = pull-up, 0 = no pull-up
  *
  * @return
  */
@@ -253,8 +253,8 @@ u32 gpio_set_pu(u32 gpio, u32 start, u32 len, u32 dat, enum gpio_op_mode op);
 /**
  * @brief gpio_set_pull_down
  *
- * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00
- * @param value 1，下拉；0，不下拉
+ * @param gpio refer to macro IO_PORTx_xx, e.g. IO_PORTA_00
+ * @param value 1 = pull-down, 0 = no pull-down
  *
  * @return
  */
@@ -264,9 +264,9 @@ int gpio_set_pull_down(u32 gpio, int value);
  * @brief gpio_set_pd
  *
  * @param gpio [GPIOA GPIOB GPIOC GPIOD GPIOR GPIOUSB]
- * @param start [0-15]，GPIOR[0-3]，GPIOUSB[0-1]
- * @param len  [0-15]，GPIOR[0-3]，GPIOUSB[0-1]
- * @param dat 1，下拉；0，不下拉
+ * @param start [0-15],GPIOR[0-3],GPIOUSB[0-1]
+ * @param len  [0-15],GPIOR[0-3],GPIOUSB[0-1]
+ * @param dat 1 = pull-down, 0 = no pull-down
  *
  * @return
  */
@@ -275,8 +275,8 @@ u32 gpio_set_pd(u32 gpio, u32 start, u32 len, u32 dat, enum gpio_op_mode op);
 /**
  * @brief gpio_set_hd0
  *
- * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00
- * @param value 1，增强输出；0，不增强输出
+ * @param gpio refer to macro IO_PORTx_xx, e.g. IO_PORTA_00
+ * @param value 1 = enhanced output, 0 = no enhanced output
  *
  * @return
  */
@@ -285,8 +285,8 @@ u32 gpio_set_hd0(u32 gpio, u32 value);
 /**
  * @brief gpio_set_hd
  *
- * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00
- * @param value 1，增强输出；0，不增强输出
+ * @param gpio refer to macro IO_PORTx_xx, e.g. IO_PORTA_00
+ * @param value 1 = enhanced output, 0 = no enhanced output
  *
  * @return
  */
@@ -295,8 +295,8 @@ int gpio_set_hd(u32 gpio, int value);
 /**
  * @brief gpio_set_die
  *
- * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00
- * @param value 1，IO普通输入；0，IO模拟输入
+ * @param gpio refer to macro IO_PORTx_xx, e.g. IO_PORTA_00
+ * @param value 1 = IO general input, 0 = IO analog input
  *
  * @return
  */
@@ -305,8 +305,8 @@ int gpio_set_die(u32 gpio, int value);
 /**
  * @brief gpio_set_dieh
  *
- * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00
- * @param value 1，IO普通输入；0，IO模拟输入
+ * @param gpio refer to macro IO_PORTx_xx, e.g. IO_PORTA_00
+ * @param value 1 = IO general input, 0 = IO analog input
  *
  * @return
  */
@@ -316,9 +316,9 @@ u32 gpio_set_dieh(u32 gpio, u32 value);
  * @brief gpio_die
  *
  * @param gpio [GPIOA GPIOB GPIOC GPIOD GPIOR GPIOUSB]
- * @param start [0-15]，GPIOR[0-3]，GPIOUSB[0-1]
- * @param len  [0-15]，GPIOR[0-3]，GPIOUSB[0-1]
- * @param dat 1，IO普通输入；0，IO模拟输入
+ * @param start [0-15],GPIOR[0-3],GPIOUSB[0-1]
+ * @param len  [0-15],GPIOR[0-3],GPIOUSB[0-1]
+ * @param dat 1 = IO general input, 0 = IO analog input
  *
  * @return
  */
@@ -328,9 +328,9 @@ u32 gpio_die(u32 gpio, u32 start, u32 len, u32 dat, enum gpio_op_mode op);
  * @brief gpio_dieh
  *
  * @param gpio [GPIOA GPIOB GPIOC GPIOD GPIOR GPIOUSB]
- * @param start [0-15]，GPIOR[0-3]，GPIOUSB[0-1]
- * @param len  [0-15]，GPIOR[0-3]，GPIOUSB[0-1]
- * @param dat 1，IO普通输入；0，IO模拟输入
+ * @param start [0-15],GPIOR[0-3],GPIOUSB[0-1]
+ * @param len  [0-15],GPIOR[0-3],GPIOUSB[0-1]
+ * @param dat 1 = IO general input, 0 = IO analog input
  *
  * @return
  */
@@ -339,8 +339,8 @@ u32 gpio_dieh(u32 gpio, u32 start, u32 len, u32 dat, enum gpio_op_mode op);
 /**
  * @brief gpio_set_output_channle
  *
- * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00
- * @param clk 参考枚举CHx_UTx_TX，如CH0_UT0_TX
+ * @param gpio refer to macro IO_PORTx_xx, e.g. IO_PORTA_00
+ * @param clk refer to enum CHx_UTx_TX, e.g. CH0_UT0_TX
  *
  * @return
  */
@@ -349,7 +349,7 @@ u32 gpio_output_channle(u32 gpio, u32 clk);
 /**
  * @brief gpio_read
  *
- * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00
+ * @param gpio refer to macro IO_PORTx_xx, e.g. IO_PORTA_00
  *
  * @return
  */
@@ -366,8 +366,8 @@ u32 gpio_in(u32 gpio);
 /**
  * @brief gpio_write
  *
- * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00
- * @param value 1，输出1；0，输出0
+ * @param gpio refer to macro IO_PORTx_xx, e.g. IO_PORTA_00
+ * @param value 1 = output 1, 0 = output 0
  *
  * @return
  */
@@ -376,7 +376,7 @@ u32 gpio_write(u32 gpio, u32 value);
 /**
  * @brief gpio_wakeup0 use IN_CHNL0_SEL
  *
- * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00
+ * @param gpio refer to macro IO_PORTx_xx, e.g. IO_PORTA_00
  *
  * @return
  */
@@ -385,7 +385,7 @@ u32 gpio_wakeup0(u32 gpio);
 /**
  * @brief gpio_irflt_in use IN_CHNL1_SEL
  *
- * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00
+ * @param gpio refer to macro IO_PORTx_xx, e.g. IO_PORTA_00
  *
  * @return
  */
@@ -394,7 +394,7 @@ u32 gpio_irflt_in(u32 gpio);
 /**
  * @brief gpio_cap_mux use IN_CHNL2_SEL
  *
- * @param gpio 参考宏IO_PORTx_xx，如IO_PORTA_00
+ * @param gpio refer to macro IO_PORTx_xx, e.g. IO_PORTA_00
  *
  * @return
  */
@@ -436,14 +436,14 @@ u32 gpio_close_uart2(void);
 /**
  * @brief gpio_set_uart0
  *
- * @param ch 0:3 选择对应IO br22
+ * @param ch 0:3 select the corresponding IO br22
  *         |ch|tx|rx|
  *         |- |- |- |
  *         |0|PA5_TX|PA6_RX|
  *         |1|PB7_TX|PB8_RX|
  *         |2|PA7_TX|PA8_RX|
- *         |3|预留|预留|
- *         |-1|关闭对应的IO口串口功能|no|
+ *         |3|reserved|reserved|
+ *         |-1|disable the serial function of the corresponding IO|no|
  *
  * @return
  */
@@ -451,14 +451,14 @@ u32 gpio_set_uart0(u32 ch);
 /**
  * @brief gpio_set_uart1
  *
- * @param ch 0:3 选择对应IO  br22
+ * @param ch 0:3 select the corresponding IO  br22
  *         |ch|tx|rx|
  *         |- |- |- |
  *         |0|PB5_TX|PB6_RX|
- *         |1|预留|预留|
+ *         |1|reserved|reserved|
  *         |2|PA1_TX|PA2_RX|
  *         |3|USBDP |USBDM |
- *         |-1|关闭对应的IO口串口功能|no|
+ *         |-1|disable the serial function of the corresponding IO|no|
  *
  * @return
  */
@@ -466,14 +466,14 @@ u32 gpio_set_uart1(u32 ch);
 /**
  * @brief gpio_set_uart2
  *
- * @param ch 0:3 选择对应IO  br22
+ * @param ch 0:3 select the corresponding IO  br22
  *         |ch|tx|rx|
  *         |- |- |- |
  *         |0|PA3_TX|PA4_RX|
- *         |1|预留|预留|
- *         |2|预留|预留|
+ *         |1|reserved|reserved|
+ *         |2|reserved|reserved|
  *         |3|PA9_TX|PA10_RX|
- *         |-1|关闭对应的IO口串口功能|no|
+ *         |-1|disable the serial function of the corresponding IO|no|
  *
  * @return
  */
@@ -659,131 +659,131 @@ enum INPUT_CH_SIGNAL {
 
 
 //=================================================================================//
-//@brief: CrossBar 获取某IO的输出映射寄存器
+//@brief: CrossBar get the output mapping register of an IO
 //@input:
-// 		gpio: 需要输出外设信号的IO口; 如IO_PORTA_00
+// 		gpio: the IO that needs to output the peripheral signal; e.g. IO_PORTA_00
 //@return:
-// 		输出映射寄存器地址; 如&(JL_OMAP->PA0_OUT)
+// 		output mapping register address; e.g. &(JL_OMAP->PA0_OUT)
 //=================================================================================//
 u32 *gpio2crossbar_outreg(u32 gpio);
 
 //=================================================================================//
-//@brief: CrossBar 获取某IO的输入映射序号
+//@brief: CrossBar get the input mapping index of an IO
 //@input:
-// 		gpio: 需要输出外设信号的IO口; 如IO_PORTA_00
+// 		gpio: the IO that needs to output the peripheral signal; e.g. IO_PORTA_00
 //@return:
-// 		输出映射序号; 如PA0_IN
+// 		output mapping index; e.g. PA0_IN
 //=================================================================================//
 u32 gpio2crossbar_inport(u32 gpio);
 
 //=================================================================================//
-//@brief: CrossBar 输出设置 API, 将指定IO口设置为某个外设的输出
+//@brief: CrossBar output setting API, set the specified IO as the output of a peripheral
 //@input:
-// 		gpio: 需要输出外设信号的IO口;
-// 		fun_index: 需要输出到指定IO口的外设信号, 可以输出外设信号列表请查看io_omap.h文件;
-// 		dir_ctl: IO口方向由外设控制使能, 常设为1;
-// 		data_ctl: IO口电平状态由外设控制使能, 常设为1;
+// 		gpio: the IO that needs to output the peripheral signal;
+// 		fun_index: the peripheral signal to be output to the specified IO, the list of outputable peripheral signals please refer to io_omap.h file;
+// 		dir_ctl: enable the IO direction to be controlled by the peripheral, usually set to 1;
+// 		data_ctl: enable the IO level state to be controlled by the peripheral, usually set to 1;
 //@return:
-// 		1)0: 执行正确;
-//		2)-EINVAL: 传参出错;
-//@note: 所映射的IO需要在设置IO状态为输出配置;
-//@example: 将UART0的Tx信号输出到IO_PORTA_05口:
-// 			gpio_direction_output(IO_PORTA_05, 1); //设置IO为输出状态
-//			gpio_set_fun_output_port(IO_PORTA_05, FO_UART0_TX, 1, 1); //将UART0的Tx信号输出到IO_PORTA_05口
+// 		1)0: executed successfully;
+//		2)-EINVAL: wrong parameters;
+//@note: the mapped IO needs to be set to output configuration;
+//@example: output UART0 Tx signal to IO_PORTA_05:
+// 			gpio_direction_output(IO_PORTA_05, 1); //set the IO to output state
+//			gpio_set_fun_output_port(IO_PORTA_05, FO_UART0_TX, 1, 1); //output UART0 Tx signal to IO_PORTA_05
 //=================================================================================//
 int gpio_set_fun_output_port(u32 gpio, u32 fun_index, u8 dir_ctl, u8 data_ctl);
 
 //=================================================================================//
-//@brief: CrossBar 输出设置 API, 将指定IO释放外设控制, 变为普通IO;
+//@brief: CrossBar output setting API, release the specified IO from peripheral control, make it a general IO;
 //@input:
-// 		gpio: 需要释放外设控制IO口, 释放后变为普通IO模式;
+// 		gpio: the IO that needs to be released from peripheral control, after release it becomes general IO mode;
 //@return:
-// 		1)0: 执行正确;
-//		2)-EINVAL: 传参出错;
+// 		1)0: executed successfully;
+//		2)-EINVAL: wrong parameters;
 //@note:
-//@example: 将IO_PORTA_05口被某一外设控制状态释放:
+//@example: release the IO_PORTA_05 from being controlled by a peripheral:
 // 			gpio_disable_fun_output_port(IO_PORTA_05);
 //=================================================================================//
 int gpio_disable_fun_output_port(u32 gpio);
 
 //=================================================================================//
-//@brief: CrossBar 输入设置 API, 将某个外设的输入设置为从某个IO输入
+//@brief: CrossBar input setting API, set a peripheral's input to be input from a certain IO
 //@input:
-// 		gpio: 需要输入外设信号的IO口;
-// 		pfun: 需要从指定IO输入的外设信号, 可以输入的外设信号列表请查看gpio.h文件enum PFI_TABLE枚举项;
+// 		gpio: the IO that needs to input the peripheral signal;
+// 		pfun: the peripheral signal to be input from the specified IO, the list of inputable peripheral signals please refer to enum PFI_TABLE in gpio.h file;
 //@return:
-// 		1)0: 执行正确;
-//		2)-EINVAL: 传参出错;
-//@note: 所映射的IO需要在设置IO状态为输入配置;
-//@example: 将UART0的Rx信号设置为IO_PORTA_05口输入:
-//			gpio_set_die(IO_PORTA_05, 1); 		//数字输入使能
-//			gpio_set_pull_up(IO_PORTA_05, 1);  //上拉输入使能
-//			gpio_direction_input(IO_PORTA_05);  //设置IO为输入状态
-//			gpio_set_fun_input_port(IO_PORTA_05, PFI_UART0_RX); //将UART0的Rx信号设置为IO_PORTA_05口输入
+// 		1)0: executed successfully;
+//		2)-EINVAL: wrong parameters;
+//@note: the mapped IO needs to be set to input configuration;
+//@example: set UART0 Rx signal to be input from IO_PORTA_05:
+//			gpio_set_die(IO_PORTA_05, 1); 		//enable digital input
+//			gpio_set_pull_up(IO_PORTA_05, 1);  //enable pull-up input
+//			gpio_direction_input(IO_PORTA_05);  //set the IO to input state
+//			gpio_set_fun_input_port(IO_PORTA_05, PFI_UART0_RX); //set UART0 Rx signal to be input from IO_PORTA_05
 //=================================================================================//
 int gpio_set_fun_input_port(u32 gpio, enum PFI_TABLE pfun);
 
 //=================================================================================//
-//@brief: CrossBar 输入设置 API, 将某个外设信号释放IO口控制, 变为普通IO;
+//@brief: CrossBar input setting API, release a peripheral signal from IO control, make it a general IO;
 //@input:
-// 		pfun: 需要释放由某个IO口输入的外设信号, 外设信号列表请查看gpio.h文件enum PFI_TABLE枚举项;
-//@return:  默认为0, 无出错处理;
+// 		pfun: the peripheral signal to be released from being input by an IO, the list of peripheral signals please refer to enum PFI_TABLE in gpio.h file;
+//@return:  defaults to 0, no error handling;
 //@note:
-//@example: 将外设信号PFI_UART0_RX释放由某个IO输入:
+//@example: release the peripheral signal PFI_UART0_RX from being input by an IO:
 // 			gpio_disable_fun_input_port(PFI_UART0_RX);
 //=================================================================================//
 int gpio_disable_fun_input_port(enum PFI_TABLE pfun);
 
 //=================================================================================//
-//@brief: Output Channel输出设置 API, 将指定IO口设置为某个外设的输出
+//@brief: Output Channel output setting API, set the specified IO as the output of a peripheral
 //@input:
-// 		gpio: 需要输出外设信号的IO口;
-// 		signal: 将enum OUTPUT_CH_SIGNAL列表中需要输出到指定IO口的外设信号, 可以输出的外设信号列表请查看gpio.h文件的enum OUTPUT_CH_SIGNAL枚举项;
-//@return:  默认为0, 出错内部触发ASSERT;
-//@note: 所映射的IO需要在设置IO状态为输出配置;
-//@example: 将OUTPUT_CH_SIGNAL_MC_PWM0_H的Tx信号输出到IO_PORTA_05口:
-// 			gpio_direction_output(IO_PORTA_05, 1); //设置IO为输出状态
-//			gpio_och_sel_output_signal(IO_PORTA_05, OUTPUT_CH_SIGNAL_MC_PWM0_H); //将OUTPUT_CH_SIGNAL_MC_PWM0_H信号输出到IO_PORTA_05口
+// 		gpio: the IO that needs to output the peripheral signal;
+// 		signal: the peripheral signal from enum OUTPUT_CH_SIGNAL list to be output to the specified IO, the list of outputable peripheral signals please refer to enum OUTPUT_CH_SIGNAL in gpio.h file;
+//@return:  defaults to 0, on error internally trigger ASSERT;
+//@note: the mapped IO needs to be set to output configuration;
+//@example: output OUTPUT_CH_SIGNAL_MC_PWM0_H Tx signal to IO_PORTA_05:
+// 			gpio_direction_output(IO_PORTA_05, 1); //set the IO to output state
+//			gpio_och_sel_output_signal(IO_PORTA_05, OUTPUT_CH_SIGNAL_MC_PWM0_H); //output OUTPUT_CH_SIGNAL_MC_PWM0_H signal to IO_PORTA_05
 //=================================================================================//
 int gpio_och_sel_output_signal(u32 gpio, enum OUTPUT_CH_SIGNAL signal);
 
 //=================================================================================//
-//@brief: Output Channel 输出设置 API, 将指定IO释放外设控制, 变为普通IO;
+//@brief: Output Channel output setting API, release the specified IO from peripheral control, make it a general IO;
 //@input:
-// 		gpio: 需要释放外设控制IO口, 释放后变为普通IO模式;
-// 		signal: 将enum OUTPUT_CH_SIGNAL列表中需要取消输出的外设信号, 外设信号列表请查看gpio.h文件的enum OUTPUT_CH_SIGNAL枚举项;;
-//@return:  默认为0, 无出错处理;
+// 		gpio: the IO that needs to be released from peripheral control, after release it becomes general IO mode;
+// 		signal: the peripheral signal from enum OUTPUT_CH_SIGNAL list to cancel output, the list of peripheral signals please refer to enum OUTPUT_CH_SIGNAL in gpio.h file;;
+//@return:  defaults to 0, no error handling;
 //@note:
-//@example: 将OUTPUT_CH_SIGNAL_MC_PWM0_H取消输出IO_PORTA_05:
+//@example: cancel output of OUTPUT_CH_SIGNAL_MC_PWM0_H to IO_PORTA_05:
 // 			gpio_och_disable_output_signal(IO_PORTA_05, OUTPUT_CH_SIGNAL_MC_PWM0_H);
 //=================================================================================//
 int gpio_och_disable_output_signal(u32 gpio, enum OUTPUT_CH_SIGNAL signal);
 
 //=================================================================================//
-//@brief: Input Channel 输入设置 API, 将某个外设的输入设置为从某个IO输入
+//@brief: Input Channel input setting API, set a peripheral's input to be input from a certain IO
 //@input:
-// 		gpio: 需要输入外设信号的IO口;
-// 		signal: 需要从指定IO输入的外设信号, 可以输入的外设信号列表请查看gpio.h文件enum INPUT_CH_SIGNAL枚举项;
-//      type: INPUT_CH 类型, 常设为INPUT_CH_TYPE_GP_ICH;
-//@return:  默认为0, 出错内部触发ASSERT;
-//@note: 所映射的IO需要在设置IO状态为输入配置;
-//@example: 将INPUT_CH_SIGNAL_TIMER0_CIN信号设置为IO_PORTA_05口输入:
-//			gpio_set_die(IO_PORTA_05, 1); 		//数字输入使能
-//			gpio_set_pull_up(IO_PORTA_05, 1);  //上拉输入使能
-//			gpio_direction_input(IO_PORTA_05);  //设置IO为输入状态
-//			gpio_ich_sel_iutput_signal(IO_PORTA_05, INPUT_CH_SIGNAL_TIMER0_CIN, INPUT_CH_TYPE_GP_ICH); //将INPUT_CH_SIGNAL_TIMER0_CIN信号设置为IO_PORTA_05口输入
+// 		gpio: the IO that needs to input the peripheral signal;
+// 		signal: the peripheral signal to be input from the specified IO, the list of inputable peripheral signals please refer to enum INPUT_CH_SIGNAL in gpio.h file;
+//      type: INPUT_CH type, usually set to INPUT_CH_TYPE_GP_ICH;
+//@return:  defaults to 0, on error internally trigger ASSERT;
+//@note: the mapped IO needs to be set to input configuration;
+//@example: set INPUT_CH_SIGNAL_TIMER0_CIN signal to be input from IO_PORTA_05:
+//			gpio_set_die(IO_PORTA_05, 1); 		//enable digital input
+//			gpio_set_pull_up(IO_PORTA_05, 1);  //enable pull-up input
+//			gpio_direction_input(IO_PORTA_05);  //set the IO to input state
+//			gpio_ich_sel_iutput_signal(IO_PORTA_05, INPUT_CH_SIGNAL_TIMER0_CIN, INPUT_CH_TYPE_GP_ICH); //set INPUT_CH_SIGNAL_TIMER0_CIN signal to be input from IO_PORTA_05
 //=================================================================================//
 int gpio_ich_sel_iutput_signal(u32 gpio, enum INPUT_CH_SIGNAL signal, enum INPUT_CH_TYPE type);
 
 //=================================================================================//
-//@brief: Input Channel 输入设置 API, 将某个外设信号释放IO口控制, 变为普通IO;
+//@brief: Input Channel input setting API, release a peripheral signal from IO control, make it a general IO;
 //@input:
-// 		gpio: 需要取消输入外设信号的IO口;
-// 		signal: 需要取消输入的外设信号, 外设信号列表请查看gpio.h文件enum INPUT_CH_SIGNAL枚举项;
-//      type: INPUT_CH 类型, 常设为INPUT_CH_TYPE_GP_ICH;
-//@return:  默认为0, 无出错处理;
+// 		gpio: the IO to cancel the input of the peripheral signal;
+// 		signal: the peripheral signal to cancel the input, the list of peripheral signals please refer to enum INPUT_CH_SIGNAL in gpio.h file;
+//      type: INPUT_CH type, usually set to INPUT_CH_TYPE_GP_ICH;
+//@return:  defaults to 0, no error handling;
 //@note:
-//@example: 将外设信号INPUT_CH_SIGNAL_TIMER0_CIN释放由某个IO输入:
+//@example: release the peripheral signal INPUT_CH_SIGNAL_TIMER0_CIN from being input by an IO:
 // 			gpio_ich_disable_iutput_signal(IO_PORTA_05, INPUT_CH_SIGNAL_TIMER0_CIN, INPUT_CH_TYPE_GP_ICH);
 //=================================================================================//
 int gpio_ich_disable_iutput_signal(u32 gpio, enum INPUT_CH_SIGNAL signal, enum INPUT_CH_TYPE type);

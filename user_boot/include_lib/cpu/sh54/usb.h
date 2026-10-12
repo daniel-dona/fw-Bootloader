@@ -127,7 +127,7 @@
 #define RXCSRH_PIDError          BIT(12)
 
 
-///USB Slave 控制传输各阶段
+///USB Slave control transfer stages
 #define USB_EP0_STAGE_SETUP       0
 #define USB_EP0_STAGE_IN          1
 #define USB_EP0_STAGE_OUT         2

@@ -56,7 +56,7 @@ SECTIONS
         . = ALIGN(32);
 	} > version_ram
 
-/* 断点功能初始化 */
+/* Breakpoint feature initialization */
 #ifdef SUPPORT_BP_DEBUG
 
     . = ORIGIN(bp_ram);
@@ -83,10 +83,10 @@ SECTIONS
     _bp_size  = SIZEOF(.bp_code);
 
 
-//******************移植注意点**********************************
+//******************Porting notes**********************************
     _bp_store_addr = _text_begin + _text_size;
-//******************移植注意点END**********************************
-/* 断点功能end */
+//******************Porting notes END**********************************
+/* Breakpoint feature end */
 #endif/* #ifdef SUPPORT_BP_DEBUG */
 }
 

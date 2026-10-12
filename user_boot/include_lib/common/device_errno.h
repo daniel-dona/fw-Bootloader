@@ -1,4 +1,4 @@
-//设备错误代码：
+//Device error codes:
 typedef enum dev_err {
     DEV_ERR_NONE = 0,
     DEV_ERR_NOT_MOUNT,
@@ -6,7 +6,7 @@ typedef enum dev_err {
 
     DEV_ERR_UNKNOW_CLASS,
 
-    DEV_ERR_NOT_READY,//设备已经在线，但是没初始化完成
+    DEV_ERR_NOT_READY,//Device is online, but initialization is not complete
     DEV_ERR_LUN,
 
     DEV_ERR_TIMEOUT,

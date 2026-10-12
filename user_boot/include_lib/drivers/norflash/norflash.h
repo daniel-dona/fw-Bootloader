@@ -31,14 +31,14 @@ struct flash_info_t {
 };
 struct flash_wp_arg {
     u32 id;
-    u8 split_mode: 1;		//0 连续写，1，分开写
+    u8 split_mode: 1;		//0: continuous write, 1: split write
     u8 write_en_use_50h: 1;	//0:06H		1:50H
     u8 res: 2;
-    u8 numOfwp_array: 4;			//写保护参数的个数
+    u8 numOfwp_array: 4;			//number of write protection parameters
     struct {
         u8 sr1;
         u8 sr2;
-        u16 wp_addr;	//写保护结束地址,单位K
+        u16 wp_addr;	//write protection end address, unit: K
     } wp_array[15];
 };
 struct flash_info_t *get_flash_info(void);
@@ -48,7 +48,7 @@ void norflash_init(u8 width, u8 clk_div, u8 read_mode);
 void norflash_read(u8 *buf, u32 addr, u32 len);
 u8 norflash_write(u8 *buf, u32 addr, u32 len);
 u8 norflash_eraser(u32 eraser_cmd, u32 addr);
-int norflash_write_protect_config(u32 addr, const struct flash_wp_arg *p);//addr传0地址时，解除写保护
+int norflash_write_protect_config(u32 addr, const struct flash_wp_arg *p);//when addr is passed as 0, write protection is released
 void flash_set_wp(u32 flash_id, u32 addr);
 u32 spi_get_port();
 u16 norflash_cmd_custom(void);

@@ -8,7 +8,7 @@
 u8 user_check_upgrade(u32 jlfs_err);
 
 
-//跳转升级标志
+// Jump upgrade flag
 #define USE_UPGRADE_MAGIC  0
 
 u8 uboot_check_upgrade_magic();

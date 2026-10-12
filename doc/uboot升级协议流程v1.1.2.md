@@ -1,13 +1,13 @@
-# uboot 升级协议
+# U-Boot Upgrade Protocol
 
 ---
 
-| 版本号 | 备注     |
-| ------ | -------- |
-| v1.1.2 | 初始版本 |
+| Version | Notes  |
+| ------- | ------ |
+| v1.1.2  | Initial version |
 
-## 一、实现流程
-1.主流程图
+## 1. Implementation Flow
+1. Main flow diagram
 
 <br/>
 <div align="center">
@@ -15,7 +15,7 @@
 </div>
 <br/>
 
-2.uboot 本身升级流程图
+2. U-Boot self-upgrade flow diagram
 
 <br/>
 <div align="center">
@@ -23,71 +23,71 @@
 </div>
 <br/>
 
-## 二、协议说明
+## 2. Protocol Description
 
-## 1.数据包格式
+## 1. Packet Format
 
-多字节数据：低字节在前，高字节在后，即小端格式(little endian)。  
-CRC16 标准： CRC-CCITT (XModem)。  
-回复使用相同指令。
+Multi-byte data: low byte first, high byte after, i.e. little endian format.  
+CRC16 standard: CRC-CCITT (XModem).  
+Reply uses the same command.
 
 | Byte[0]         | Byte[1]         | Byte[3~2] | Byte[4] | Byte[5]    | Byte[6~n-2]       | Byte[n~n-1] |      |
 | --------------- | --------------- | --------- | ------- | ---------- | ----------------- | ----------- | ---- |
-| syncdata0(0xAA) | syncdata1(0x55) | cmd_len   | cmd     | rsp_status | param(部分指令无) | crc16       |      |
+| syncdata0(0xAA) | syncdata1(0x55) | cmd_len   | cmd     | rsp_status | param(none for some commands) | crc16       |      |
 
-参数说明：  
-syncdata0:  固定为 0xAA
-syncdata1:  固定为0x55
-cmd_len:  cmd + rsp_status + union 数据的 长度
-cmd:  操作指令  
-rsp_status:  回复状态  
-param:   对应操作指令的参数（部分指令无参数）
-crc16:  整个命令包（除去crc自身）的crc16结果
+Parameter description:  
+syncdata0:  fixed at 0xAA
+syncdata1:  fixed at 0x55
+cmd_len:  length of cmd + rsp_status + union data
+cmd:  operation command  
+rsp_status:  reply status  
+param:   parameters corresponding to the operation command (some commands have no parameters)
+crc16:  CRC16 result of the entire command packet (excluding the CRC itself)
 
-## 2.回复状态
+## 2. Reply Status
 
-| 状态                   | 数值 | 说明         |
-| ---------------------- | ---- | ------------ |
-| JL_SU_CMD_SUSS         | 0x0  | 命令执行成功 |
-| JL_SU_CMD_CRC_ERROR    | 0x1  | CRC 错误     |
-| JL_SU_CMD_SDK_ID_ERROR | 0x2  | ID 错误      |
-| JL_SU_CMD_OTHER_ERROR  | 0x3  | 其他错误     |
+| Status                 | Value | Description             |
+| ---------------------- | ----- | ----------------------- |
+| JL_SU_CMD_SUSS         | 0x0   | Command executed successfully |
+| JL_SU_CMD_CRC_ERROR    | 0x1   | CRC error               |
+| JL_SU_CMD_SDK_ID_ERROR | 0x2   | ID error                |
+| JL_SU_CMD_OTHER_ERROR  | 0x3   | Other errors            |
 
         enum {  
-         JL_SU_CMD_SUSS, //命令成功  
-         JL_SU_CMD_CRC_ERROR, //CRC 出错  
-         JL_SU_CMD_SDK_ID_ERROR, //ID 错误  
-         JL_SU_CMD_OTHER_ERROR， //其他错误  
+         JL_SU_CMD_SUSS, //command success  
+         JL_SU_CMD_CRC_ERROR, //CRC error  
+         JL_SU_CMD_SDK_ID_ERROR, //ID error  
+         JL_SU_CMD_OTHER_ERROR, //other errors  
         };
 
-## 3.操作指令、参数及数据方向
+## 3. Operation Commands, Parameters and Data Direction
 
 ### 1.JL_SU_CMD_DEVICE_INIT
 
-| 定义值 | 说明                                            |
-| ------ | ----------------------------------------------- |
-| 0xC0   | 设备初始化，获取对应 file_name 区域的地址长度等 |
+| Defined Value | Description                                                       |
+| ------------- | ----------------------------------------------------------------- |
+| 0xC0          | Initialize device, obtain the address, length, etc. of the region corresponding to file_name |
 
-- **上位机参数**
-- **方向：上位机->设备**
+- **Host tool parameters**
+- **Direction: host tool -> device**
 
-|      | byte[0~15]   | byte[16]   |
-| ---- | ------------ | ------------ |
-| 参数 | file_name[16] | mode |
-| 说明 | 区域名字      | 读取模式   app_dir_head: 设置0   uboot_zone：设置0 |
+|         | byte[0~15]   | byte[16]   |
+| ------- | ------------ | ---------- |
+| Parameter | file_name[16] | mode |
+| Description | Region name  | Read mode; app_dir_head: set to 0; uboot_zone: set to 0 |
 
      struct {
             u8 file_name[16];
             u8 mode;
         }  init;
 
-- **设备回复参数**
-- **方向：设备->上位机**
+- **Device reply parameters**
+- **Direction: device -> host tool**
 
-|      | byte[3~0]    | byte[7~4]    | byte[11~8]     | byte[15~12] |
-| ---- | ------------ | ------------ | --------------- | ------------- |
-| 参数 | upgrade_addr | upgrade_len  | upgrade_eoffset | flash_alignsize |
-| 说明 | 区域地址     | 区域长度     | 设备偏移长度    | 对齐长度    |
+|         | byte[3~0]    | byte[7~4]    | byte[11~8]     | byte[15~12] |
+| ------- | ------------ | ------------ | --------------- | ------------|
+| Parameter | upgrade_addr | upgrade_len  | upgrade_eoffset | flash_alignsize |
+| Description | Region address | Region length | Device offset length | Alignment length |
 
      struct {
             u32 upgrade_addr;
@@ -98,29 +98,29 @@ crc16:  整个命令包（除去crc自身）的crc16结果
 
 ### 2.JL_SU_CMD_DEVICE_CHECK
 
-| 定义值 | 说明                     |
-| ------ | ------------------------ |
-| 0xC1   | 获取设备的 PID/VID/sdkID |
+| Defined Value | Description                  |
+| ------------- | ---------------------------- |
+| 0xC1          | Get the device's PID/VID/SDK ID |
 
-- **上位机参数**
-- **方向：上位机->设备**
+- **Host tool parameters**
+- **Direction: host tool -> device**
 
-|      | byte[3~0]    |
-| ---- | ------------ |
-| 参数 | sdk_id       |
-| 说明 | 上位机sdk id |
+|         | byte[3~0]    |
+| ------- | ------------ |
+| Parameter | sdk_id       |
+| Description | Host tool SDK ID |
 
     struct {
         u32 sdk_id;
     }device_check;
 
-- **设备回复参数**
-- **方向：设备->上位机**
+- **Device reply parameters**
+- **Direction: device -> host tool**
 
-|      | byte[0~3] | byte[4~19] | byte[23~20] |
-| ---- | --------- | ---------- | :---------: |
-| 参数 | vid       | pid        |   sdk_id    |
-| 说明 | 设备 vid  | 设备 pid   | 设备sdk id  |
+|         | byte[0~3] | byte[4~19] | byte[23~20] |
+| ------- | --------- | ---------- | :---------: |
+| Parameter | vid       | pid        |   sdk_id    |
+| Description | Device VID  | Device PID   | Device SDK ID  |
 
         struct {
             u8 vid[4];
@@ -131,19 +131,19 @@ crc16:  整个命令包（除去crc自身）的crc16结果
 
 ### 3.JL_SU_CMD_ERASE
 
-| 定义值 | 说明         |
-| ------ | ------------ |
-| 0xC2   | 设备擦除指令 |
+| Defined Value | Description        |
+| ------------- | ------------------ |
+| 0xC2          | Device erase command |
 
-- **上位机参数**
-- **方向：上位机->设备**
+- **Host tool parameters**
+- **Direction: host tool -> device**
 
-|      | byte[3~0]    | byte[7~4]   |
-| ---- | ------------ | ------------ |
-|   参数   | address      | type         |
-| 说明 | 擦除地址     | 擦除类型     |
+|         | byte[3~0]    | byte[7~4]   |
+| ------- | ------------ | ------------ |
+|   Parameter   | address      | type         |
+| Description | Erase address | Erase type   |
 
-        #define JL_ERASE_TYPE_PAGE   1   //page擦除
+        #define JL_ERASE_TYPE_PAGE   1   //page erase
         #define JL_ERASE_TYPE_SECTOR 2   //sector
         #define JL_ERASE_TYPE_BLOCK  3   //block
         struct {
@@ -151,48 +151,48 @@ crc16:  整个命令包（除去crc自身）的crc16结果
             u32  type;
         } erase;
 
-- **设备回复参数:无（由回复状态位rsp_status回复）**
-- **方向：设备->上位机**
+- **Device reply parameters: none (replied via the reply status field rsp_status)**
+- **Direction: device -> host tool**
 
 ### 4.JL_SU_CMD_WRITE
 
-| 定义值 | 说明       |
-| ------ | ---------- |
-| 0xC3   | 设备写指令 |
+| Defined Value | Description        |
+| ------------- | ------------------ |
+| 0xC3          | Device write command |
 
-- **上位机参数**
+- **Host tool parameters**
 
-- **方向：上位机->设备**
+- **Direction: host tool -> device**
 
-|      | byte[3~0] | byte[7~4]   | byte[8~n] |
-| ---- | --------- | ----------- | --------- |
-| 参数 | address   | data_length | data[0]   |
-| 说明 | 写地址    | 数据长度    | 数据      |
+|         | byte[3~0] | byte[7~4]   | byte[8~n] |
+| ------- | --------- | ----------- | --------- |
+| Parameter | address   | data_length | data[0]   |
+| Description | Write address | Data length | Data      |
 
         struct {
-            u32 address;		// 烧写FLASH地址
-            u32 data_length;    //烧写长度
-            u8  data[0];		// 烧写数据
+            u32 address;		// FLASH write address
+            u32 data_length;    // write length
+            u8  data[0];		// write data
         } write;
 
-- **设备回复参数:无（由回复状态位rsp_status回复）**
-- **方向：设备->上位机**
+- **Device reply parameters: none (replied via the reply status field rsp_status)**
+- **Direction: device -> host tool**
 
 
 
 ### 5.JL_SU_CMD_FLASH_CRC
 
-| 定义值 | 说明         |
-| ------ | ------------ |
-| 0xC4   | 获取设备 crc |
+| Defined Value | Description      |
+| ------------- | ---------------- |
+| 0xC4          | Get device CRC   |
 
-- **上位机参数**
-- **方向：上位机->设备**
+- **Host tool parameters**
+- **Direction: host tool -> device**
 
-|      | byte[3~0]      | byte[7~4]  | byte[11~8]       |
-| ---- | -------------- | ---------- | ---------------- |
-| 参数 | address        | len        | block_size       |
-| 说明 | 需要校验的地址 | 校验总长度 | 单块数据校验长度 |
+|         | byte[3~0]      | byte[7~4]  | byte[11~8]       |
+| ------- | -------------- | ---------- | ---------------- |
+| Parameter | address        | len        | block_size       |
+| Description | Address to be verified | Total verification length | Per-block data verification length |
 
         struct {
             u32 address;
@@ -200,13 +200,13 @@ crc16:  整个命令包（除去crc自身）的crc16结果
             u32 block_size;
         } crc_list;
 
-- **设备回复参数**
-- **方向：设备->上位机**
+- **Device reply parameters**
+- **Direction: device -> host tool**
 
-|      | byte[0~n]                              |
-| ---- | -------------------------------------- |
-| 参数 | crc[0]                                 |
-| 说明 | crc列表（由len/block_size 个crc16组成) |
+|         | byte[0~n]                              |
+| ------- | -------------------------------------- |
+| Parameter | crc[0]                                 |
+| Description | CRC list (composed of len/block_size CRC16 values) |
 
     struct {
         u16 crc[0];
@@ -216,29 +216,29 @@ crc16:  整个命令包（除去crc自身）的crc16结果
 
 ### 6.JL_SU_CMD_EX_KEY
 
-| 定义值 | 说明     |
-| ------ | -------- |
-| 0xC5   | 交换密钥 |
+| Defined Value | Description |
+| ------------- | ----------- |
+| 0xC5          | Exchange key |
 
-- **上位机参数**
-- **方向：上位机->设备**
+- **Host tool parameters**
+- **Direction: host tool -> device**
 
 |      | byte[3~0]  |
 | ---- | ---------- |
 |      | secret_key |
-| 说明 | 密钥       |
+| Description | Key       |
 
         struct {
             u32 secret_key;
         } ex_key;
-- **设备回复参数**
+- **Device reply parameters**
 - 
-- **方向：设备->上位机**
+- **Direction: device -> host tool**
 
 |      | byte[1~0] | byte[3~2]   | byte[n~4] |
 | ---- | --------- | ----------- | --------- |
 |      | rand      | data_length | data[0]   |
-| 说明 | 随机数    | 密钥长度    | 密钥      |
+| Description | Random number | Key length | Key      |
 
         struct {
             u16 rand;
@@ -248,17 +248,16 @@ crc16:  整个命令包（除去crc自身）的crc16结果
 
 ### 7.JL_SU_CMD_REBOOT
 
-| 定义值 | 说明                         |
-| ------ | ---------------------------- |
-| 0xCA   | 复位（升级成功）指令，无返回 |
+| Defined Value | Description                         |
+| ------------- | ----------------------------------- |
+| 0xCA          | Reset (upgrade success) command, no return |
 
-- **无参数**
-
-
+- **No parameters**
 
 
 
-**指令定义表：**
+
+**Command definition table:**
 
     #define JL_SU_CMD_DEVICE_INIT   0xC0
     #define JL_SU_CMD_DEVICE_CHECK  0xC1
@@ -268,7 +267,7 @@ crc16:  整个命令包（除去crc自身）的crc16结果
     #define JL_SU_CMD_EX_KEY        0xC5
     #define JL_SU_CMD_REBOOT        0xCA
 
-**上位机发送结构体参考（注意crc16不包含在结构体里）：**
+**Reference for host tool sending struct (note: crc16 is not included in the struct):**
 
 
     typedef struct {
@@ -287,13 +286,13 @@ crc16:  整个命令包（除去crc自身）的crc16结果
              }device_check;
              
              struct {
-                u32 address;		// 烧写FLASH地址
-                u32 data_length;    //烧写长度
-                u8  data[0];		// 烧写数据
+                u32 address;		// FLASH write address
+                u32 data_length;    // write length
+                u8  data[0];		// write data
             } write;
     
             struct {
-                u32 address;    //需要对齐
+                u32 address;    // needs alignment
                 u32 type;
             } erase;
     
@@ -311,7 +310,7 @@ crc16:  整个命令包（除去crc自身）的crc16结果
         u16 crc16;
     } JL_SECTOR_COMMAND_ITEM;
 
-**设备回复结构体参考(注意crc16不包含在结构体里)**
+**Reference for device reply struct (note: crc16 is not included in the struct)**
 
     typedef struct {
         u8 syncdata0;

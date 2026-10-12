@@ -12,7 +12,7 @@
 #define UART_BAUD_CLK      48000000
 static u8 used_tx_io;
 
-//打印使用UART2，用户只能使用UART0和UART1
+//print (debug output) uses UART2, user can only use UART0 and UART1
 #define DEBUG_UART  JL_UART2
 
 __attribute__((always_inline_when_const_args))
@@ -33,13 +33,13 @@ void putchar(char a)
 }
 
 
-static void uart_set(JL_UART_TypeDef *UART, u32 baud, u32 txio, u32 rxio)//设置IO、占据问题、输出outch、波特率，不设置DMA和中断使能
+static void uart_set(JL_UART_TypeDef *UART, u32 baud, u32 txio, u32 rxio)//set IO, occupancy issue, output outch, baud rate; do not set DMA and interrupt enable
 {
-    SFR(JL_CLOCK->CLK_CON1, 10, 2, 1);//串口模块使用pll48
+    SFR(JL_CLOCK->CLK_CON1, 10, 2, 1);//serial (UART) module uses pll48
     if (UART == JL_UART0) {
         JL_IOMAP->CON1 &= ~(0x0f << 8);//uart0 output_ch_0
         JL_IOMAP->CON1 |= 0 << 8;//uart0
-        JL_IOMAP->CON3 &= ~(0X7 << (4 * 0));//不占据IO
+        JL_IOMAP->CON3 &= ~(0X7 << (4 * 0));//do not occupy IO
         gpio_output_channle(txio, CH0_UT0_TX);
         if (rxio != (u32) - 1) {
             gpio_uart_rx_input(rxio, 0, 0);
@@ -47,7 +47,7 @@ static void uart_set(JL_UART_TypeDef *UART, u32 baud, u32 txio, u32 rxio)//设�
     } else if (UART == JL_UART1) {
         JL_IOMAP->CON3 &= ~(0x0f << 20);//uart1 output_ch_1
         JL_IOMAP->CON3 |= 0x01 << 20;//uart1 output_ch_1
-        JL_IOMAP->CON3 &= ~(0X7 << (4 * 1));//不占据IO
+        JL_IOMAP->CON3 &= ~(0X7 << (4 * 1));//do not occupy IO
         gpio_output_channle(txio, CH1_UT1_TX);
         if (rxio != (u32) - 1) {
             gpio_uart_rx_input(rxio, 1, 1);
@@ -55,7 +55,7 @@ static void uart_set(JL_UART_TypeDef *UART, u32 baud, u32 txio, u32 rxio)//设�
     } else {
         JL_IOMAP->CON3 &= ~(0x0f << 24);//uart2 output_ch_2
         JL_IOMAP->CON3 |= 0x07 << 24;//uart2 output_ch_2
-        JL_IOMAP->CON3 &= ~(0X7 << (4 * 2));//不占据IO
+        JL_IOMAP->CON3 &= ~(0X7 << (4 * 2));//do not occupy IO
         gpio_output_channle(txio, CH2_UT2_TX);
         if (rxio != (u32) - 1) {
             gpio_uart_rx_input(rxio, 2, 2);
@@ -122,12 +122,12 @@ void uart_close(void)
 
 #define UT_UP_BUF_SIZE      4128    //4096 + 32
 static u8 ut_up_buf[UT_UP_BUF_SIZE] ALIGNE(32);
-static volatile u32 ut_up_rxlen = 0;//使用volatile型
-static volatile u8 ut_new_data = 0;//使用volatile型
+static volatile u32 ut_up_rxlen = 0;//use volatile type
+static volatile u8 ut_new_data = 0;//use volatile type
 
 static u8 ut1_up_buf[UT_UP_BUF_SIZE] ALIGNE(32);
-static volatile u32 ut1_up_rxlen = 0;//使用volatile型
-static volatile u8 ut1_new_data = 0;//使用volatile型
+static volatile u32 ut1_up_rxlen = 0;//use volatile type
+static volatile u8 ut1_new_data = 0;//use volatile type
 
 static u32 user_uart0_tx, user_uart0_rx;
 static u32 user_uart1_tx, user_uart1_rx;
@@ -217,7 +217,7 @@ static void uart1_irq(void)
     }
     __asm__ volatile("csync");
 }
-void ut_device_mode(const char *ut_tx, const char *ut_rx, u32 baud)//ut_tx ut_rx PA-PH任意IO
+void ut_device_mode(const char *ut_tx, const char *ut_rx, u32 baud)//ut_tx ut_rx: any IO of PA-PH
 {
     u32 ut_tx_io = get_gpio(ut_tx);
     u32 ut_rx_io = get_gpio(ut_rx);
@@ -234,8 +234,8 @@ void ut_device_mode(const char *ut_tx, const char *ut_rx, u32 baud)//ut_tx ut_rx
         JL_UART0->RXEADR = (u32)ut_up_buf + UT_UP_BUF_SIZE;
         JL_UART0->RXCNT = UT_UP_BUF_SIZE;
         JL_UART0->OTCNT = UART_BAUD_CLK / 1000; //1ms
-        JL_UART0->CON0 |= BIT(5) | BIT(3); //OT中断,RX中断
-        JL_UART0->CON0 |= BIT(6);   //启动DMA
+        JL_UART0->CON0 |= BIT(5) | BIT(3); //OT interrupt, RX interrupt
+        JL_UART0->CON0 |= BIT(6);   //start DMA
         JL_UART0->CON0 &= ~BIT(1);  //8bit
         JL_UART0->CON0 |= BIT(13) | BIT(12) | BIT(10) | BIT(0);
     }
@@ -244,7 +244,7 @@ void ut_device_mode(const char *ut_tx, const char *ut_rx, u32 baud)//ut_tx ut_rx
 void ut_devic_mode_close(void)
 {
     JL_UART0->CON0 = BIT(13) | BIT(12) | BIT(10);
-    JL_IOMAP->CON3 &= ~(0X7 << (4 * 0));//不占据IO
+    JL_IOMAP->CON3 &= ~(0X7 << (4 * 0));//do not occupy IO
     gpio_set_pull_up(user_uart0_tx, 0);
     gpio_set_pull_down(user_uart0_tx, 0);
     gpio_set_die(user_uart0_tx, 0);
@@ -263,7 +263,7 @@ void user_uart1_usb0_init(u32 baud)
     user_uart1_tx = txd;
     user_uart1_rx = rxd;
 
-    SFR(JL_CLOCK->CLK_CON1, 10, 2, 1);//串口模块使用pll48
+    SFR(JL_CLOCK->CLK_CON1, 10, 2, 1);//serial (UART) module uses pll48
     usb_iomode(0, 1);
     gpio_set_die(txd, 1);
     gpio_set_pull_up(txd, 1);
@@ -276,7 +276,7 @@ void user_uart1_usb0_init(u32 baud)
     gpio_direction_input(rxd);
 
     JL_IOMAP->CON3 &= ~(0X7 << (4 * 1));
-    JL_IOMAP->CON3 |= BIT(4 * 1 + 3);//占据IO
+    JL_IOMAP->CON3 |= BIT(4 * 1 + 3);//occupy IO
     JL_IOMAP->CON1 &= ~(0x3 << 2);
     JL_IOMAP->CON1 |= (0x3 << 2);//USBA
     request_irq(IRQ_UART1_IDX, 0, uart1_irq, 0);
@@ -292,8 +292,8 @@ void user_uart1_usb0_init(u32 baud)
     JL_UART1->RXEADR = (u32)ut1_up_buf + UT_UP_BUF_SIZE;
     JL_UART1->RXCNT = UT_UP_BUF_SIZE;
     JL_UART1->OTCNT = UART_BAUD_CLK / 1000; //1ms
-    JL_UART1->CON0 |= BIT(5) | BIT(3); //OT中断,RX中断
-    JL_UART1->CON0 |= BIT(6);   //启动DMA
+    JL_UART1->CON0 |= BIT(5) | BIT(3); //OT interrupt, RX interrupt
+    JL_UART1->CON0 |= BIT(6);   //start DMA
     JL_UART1->CON0 &= ~BIT(1);  //8bit
     JL_UART1->CON0 |= BIT(13) | BIT(12) | BIT(10) | BIT(0);
 }
@@ -302,7 +302,7 @@ void user_uart1_usb0_close()
     if (JL_UART1->CON0 & BIT(0)) {
         JL_UART1->CON0 = BIT(13) | BIT(12) | BIT(10);
         JL_IOMAP->CON1 &= ~(0x3 << 2);
-        JL_IOMAP->CON3 &= ~(0X7 << (4 * 1));//不占据IO
+        JL_IOMAP->CON3 &= ~(0X7 << (4 * 1));//do not occupy IO
         gpio_set_die(user_uart1_tx, 1);
         gpio_set_pull_up(user_uart1_tx, 0);
         gpio_set_pull_down(user_uart1_tx, 0);
@@ -324,7 +324,7 @@ void user_uart1_usb0_tx_data(u8 *buf, u32 len)
 void uart_test_task()
 {
     void wdt_disable(void);
-    wdt_disable();//关闭看门狗
+    wdt_disable();//disable watchdog
     printf("========uart_test_task=========\n");
 #if 1
     ut_device_mode("PA08", "PA09", 460800);

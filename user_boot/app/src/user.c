@@ -15,24 +15,24 @@
 
 #define     DUAL_BANK_MODE 1
 /**********************************************************************************************************
-多字节数据：低字节在前，高字节在后，即小端格式(little endian)。
-CRC16 标准： CRC-CCITT (XModem)。
-回复使用相同指令。
+Multi-byte data: low byte first, high byte second, i.e. little endian format.
+CRC16 standard: CRC-CCITT (XModem).
+Replies use the same command format.
 
 | Byte[0]         | Byte[1]         | Byte[3~2] | Byte[4] | Byte[5]    | Byte[6~n-2]       | Byte[n~n-1] |
 | --------------- | --------------- | --------- | ------- | ---------- | ----------------- | ----------- |
-| syncdata0(0xAA) | syncdata1(0x55) | cmd_len   | cmd     | rsp_status | param(部分指令无) | crc16       |
+| syncdata0(0xAA) | syncdata1(0x55) | cmd_len   | cmd     | rsp_status | param(nothing for some commands) | crc16       |
 
-参数说明：
-syncdata0:  固定为 0xAA
-syncdata1:  固定为0x55
-cmd_len:    cmd + rsp_status + union 数据的 长度
-cmd:        操作指令
-rsp_status: 回复状态
-param:      对应操作指令的参数（部分指令无参数）
-crc16:      整个命令包（除去crc自身）的crc16结果
+Parameter description:
+syncdata0:  fixed as 0xAA
+syncdata1:  fixed as 0x55
+cmd_len:    length of cmd + rsp_status + the union data
+cmd:        operation command
+rsp_status: reply status
+param:      parameters of the corresponding operation command (some commands have no parameters)
+crc16:      the crc16 result over the whole command packet (excluding the crc field itself)
 
-demo加密部分为 cmd+rsp_status+param
+The part encrypted in the demo is cmd+rsp_status+param
 **********************************************************************************************************/
 
 JLFS_FILE upgrade_file;
@@ -62,7 +62,7 @@ enum {
     JL_SU_CMD_OTHER_ERROR,
 };
 
-//上位机结构体
+//host tool struct
 typedef struct {
     u8 syncdata0;
     u8 syncdata1;
@@ -76,13 +76,13 @@ typedef struct {
 
 
         struct {
-            u32 address;		// 烧写FLASH地址
-            u32 data_length;    //烧写长度
-            u8  data[0];		// 烧写数据
+            u32 address;		// FLASH address to write
+            u32 data_length;    //write length
+            u8  data[0];		// write data
         } write;
 
         struct {
-            u32 address;    //需要对齐
+            u32 address;    //must be aligned
             u32 type;
         } erase;
 
@@ -105,7 +105,7 @@ typedef struct {
     };
 } __attribute__((packed)) JL_SECTOR_COMMAND_ITEM;
 
-//设备结构体
+//device struct
 typedef struct {
     u8 syncdata0;
     u8 syncdata1;
@@ -152,7 +152,7 @@ extern u32 jlfs_get_flash_eoffset_size(void);
 
 JL_SECTOR_COMMAND_ITEM *g_ops;
 JL_SECTOR_COMMAND_DEV_ITEM *dev_g_ops;
-u8 dev_g_buf[64] __attribute__((aligned(4))); //这个buf限制64是为了兼容usb
+u8 dev_g_buf[64] __attribute__((aligned(4))); //this buf is limited to 64 for usb compatibility
 
 volatile int new_data;
 static u32 flash_alignsize;
@@ -168,9 +168,9 @@ void set_new_data_flag(int flag)
     new_data = flag;
 }
 
-//10进制，注意要与上位机一致，不然无法升级
+//decimal, note: must match the host tool, otherwise upgrade will fail
 u32 communication_key = 12345678;
-//加解密
+//encrypt/decrypt
 void enc_dec_data(u8 *buf, u32 len)
 {
     u32 keyIdx = 0;
@@ -198,22 +198,22 @@ u8 *enc_cmd_data(u8 *buf, u32 len)
     /* put_buf(buf, len); */
 
     for (i = 0; i < len - 7; i++) {
-        if (buf[i] == SYNC_MARK0 && buf[i + 1] == SYNC_MARK1) { //检测头
-            cmd_len = *((u16 *)(buf + i + 2)); //获取cmd的长度
-            if (i + 2 + 2 + cmd_len + 2 > len) { //数据包长度
+        if (buf[i] == SYNC_MARK0 && buf[i + 1] == SYNC_MARK1) { //detect header
+            cmd_len = *((u16 *)(buf + i + 2)); //get the length of cmd
+            if (i + 2 + 2 + cmd_len + 2 > len) { //data packet length
                 log_info("cmd len too long\n");
                 return NULL;
             }
 
             data_crc |= *(buf + i + 2 + 2 + cmd_len);
-            data_crc |= (*(buf + i + 2 + 2 + cmd_len + 1)) << 8; //获取传下来的crc
-            check_crc = chip_crc16(&buf[i], 2 + 2 + cmd_len); //本地校验crc
+            data_crc |= (*(buf + i + 2 + 2 + cmd_len + 1)) << 8; //get the crc sent in the packet
+            check_crc = chip_crc16(&buf[i], 2 + 2 + cmd_len); //local crc check
             if (data_crc == check_crc) {
                 /* printf("enc cmd ok\n"); */
-                //对数据体解码
+                //decode the data body
                 enc_dec_data(buf + i + 4, cmd_len);
 
-                return &(buf[i]);  //正常确则返回指令包地址
+                return &(buf[i]);  //if ok, return the command packet address
             } else {
                 log_info("cmd crc err,crc:0x%x,check:0x%x\n", data_crc, check_crc);
                 return NULL;
@@ -258,24 +258,24 @@ void upgrade_rsp(void *p, u32 len)
 #endif
 }
 
-//设置余下协议部分及回复
+//set the remaining protocol part and reply
 void set_remain_and_upgrade_rsp(u8 cmd)
 {
     u16 crc16_len;
     u16 crc16_da;
     dev_g_ops->syncdata0 = 0xAA;
-    dev_g_ops->syncdata1 = 0x55;          //设置标志
-    crc16_len = 1 + 1 + 2 + dev_g_ops->cmd_len; //数据长度
+    dev_g_ops->syncdata1 = 0x55;          //set the flag
+    crc16_len = 1 + 1 + 2 + dev_g_ops->cmd_len; //data length
     dev_g_ops->cmd = cmd;
 
-    //对数据体加密
+    //encrypt the data body
     enc_dec_data(((u8 *)dev_g_ops) + 4, dev_g_ops->cmd_len);
 
     crc16_da = chip_crc16(dev_g_ops, crc16_len);
     *((u8 *)dev_g_ops + crc16_len) = crc16_da & 0xff;
     *((u8 *)dev_g_ops + crc16_len + 1) = crc16_da >> 8;
 
-    upgrade_rsp(dev_g_ops, crc16_len + 2); //总长度为数据长度+crc16长度
+    upgrade_rsp(dev_g_ops, crc16_len + 2); //total length is data length + crc16 length
 }
 
 
@@ -302,7 +302,7 @@ void jl_su_device_init()
 
         dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
     }
-    dev_g_ops->cmd_len = 1 + 1 + 4 + 4 + 4 + 4; //根据协议计算长度,不能用sizeof
+    dev_g_ops->cmd_len = 1 + 1 + 4 + 4 + 4 + 4; //length calculated per protocol, cannot use sizeof
     /* printf("cmd LEN:%d\n",dev_g_ops->cmd_len); */
 
     set_remain_and_upgrade_rsp(JL_SU_CMD_DEVICE_INIT);
@@ -313,6 +313,7 @@ void jl_su_flash_crc()
     u32 block_count = g_ops->crc_list.len / g_ops->crc_list.block_size;
     u32 l = flash_alignsize;
     u8 *p = get_global_buffer(l); //4K
+
     log_info("%s() address:%x len:%d block_size:%d block_count:%d\n",
              __func__, g_ops->crc_list.address, g_ops->crc_list.len,
              g_ops->crc_list.block_size, block_count);
@@ -378,14 +379,14 @@ void jl_su_write_flash()
 }
 void jl_su_devcie_check()
 {
-    if (g_ops->device_check.sdk_id == 0x12345678) { //用户自定义，可以用于区分产品类型，避免烧写错误固件
+    if (g_ops->device_check.sdk_id == 0x12345678) { //user-defined, can be used to distinguish product type, to avoid writing the wrong firmware
         jlfs_get_pid_vid(dev_g_ops->device_check.pid, dev_g_ops->device_check.vid);
         dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
     } else {
         dev_g_ops->rsp_status = JL_SU_CMD_SDK_ID_ERROR;
     }
 
-    dev_g_ops->device_check.sdk_id = 0x12345678; //设备id
+    dev_g_ops->device_check.sdk_id = 0x12345678; //device id
     dev_g_ops->cmd_len = 1 + 1 + 4 + 16 + 4;
     set_remain_and_upgrade_rsp(JL_SU_CMD_DEVICE_CHECK);
 }
@@ -403,7 +404,7 @@ void jl_su_updata_dual_bank_crc()
 }
 void upgrade_loop()
 {
-    dev_g_ops = (JL_SECTOR_COMMAND_DEV_ITEM *)dev_g_buf;//回复buf 64大小是后面需要兼容usb
+    dev_g_ops = (JL_SECTOR_COMMAND_DEV_ITEM *)dev_g_buf;//reply buf, 64 size is needed for usb compatibility later
 
     while (1) {
 
@@ -524,11 +525,11 @@ u8 user_check_upgrade(u32 jlfs_err)
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
 /////////////////////////////////////////////////////////////////////////////////////////////////////
-//通过检测标志位进入升级，可以由app层跳转过来
-//详细见文档说明
+//enter upgrade by detecting the flag, can be jumped to from the app layer
+//see the documentation for details
 extern u32 nvram_list[];
 #define NV_RAM_LIST_ADDR  (nvram_list)
-//数据要与升级前匹配 start ok
+//data must match the pre-upgrade value, start ok
 static const u8 uboot_uart_upgrade_mode_magic[8] = {
     'u', 'b', 'o', 'o', 't', 0x5a, 's', 't',
 };

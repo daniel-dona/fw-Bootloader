@@ -5,10 +5,10 @@
 
 
 typedef struct {
-    u32 addr;   //flash里的绝对地址
-    u32 size;   //文件大小
-    u32 pos;    //操作的偏移量
-    u32 res;    //预留参数
+    u32 addr;   //absolute address in flash
+    u32 size;   //file size
+    u32 pos;    //operation offset
+    u32 res;    //reserved parameter
 } JLFS_FILE;
 
 
@@ -31,9 +31,9 @@ u32 jlfs_updata_dual_bank_info(JLFS_FILE *file, u16 data_crc);
 u32 jlfs_get_idle_bank_info(JLFS_FILE *file, u32 mode);
 /* --------------------------------------------------------------------------*/
 /**
- * @brief 选择哪个code跑，必须在 jlfs_mount() 前调用才有效
+ * @brief Select which code to run; must be called before jlfs_mount() to take effect
  *
- * @param code_index 0:code0  1:code1  -1:自动切换（原模式） >1的数值会被强制为code0
+ * @param code_index 0:code0  1:code1  -1:auto switch (original mode); values >1 are forced to code0
  */
 /* ----------------------------------------------------------------------------*/
 void jlfs_dual_bank_choose_code(u8 code_index);

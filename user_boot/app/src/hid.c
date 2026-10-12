@@ -197,7 +197,7 @@ static u32 hid_itf_hander(struct usb_device_t *usb_device, struct usb_ctrlreques
             } else if (usb_device->bDeviceStates == USB_ADDRESS) {
                 usb_set_setup_phase(usb_device, USB_EP0_SET_STALL);
             } else if (usb_device->bDeviceStates == USB_CONFIGURED) {
-                //只有一个interface 没有Alternate
+                // Only one interface, no alternate setting
                 usb_set_setup_phase(usb_device, USB_EP0_SET_STALL);
             }
             break;

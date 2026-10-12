@@ -146,7 +146,7 @@ void usb_suspend_check(void *p)
     usb_dev usb_id = (usb_dev)p;
 
     static u16 sof_frame = 0;
-    u16 frame = usb_read_sofframe(usb_id);// sof frame 不更新，则usb进入断开或者suspend状态
+    u16 frame = usb_read_sofframe(usb_id);// if the sof frame is not updated, the usb has entered a disconnected or suspend state
     if (frame == sof_frame) {
         usb_phy_suspend(usb_id);
     }

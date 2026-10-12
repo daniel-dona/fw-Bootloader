@@ -30,16 +30,16 @@
 
 #if SUPPORT_BP_DEBUG == 1
 #include  "breakpoint_flash_stubs.ld"
-/* 断点功能初始化 */
+/* breakpoint functionality initialization */
 
-//******************移植注意点**********************************
-/*放到sbc的ram*/
+//******************Porting Notes**********************************
+/* Place in the SBC RAM */
 BP_BEG 		= 0x1a0000;
-/* 需要计算是否能够容纳加入的调试程序 */
+/* Need to calculate whether the added debug program can be accommodated */
 BP_SIZE 		= 0x2d0;
-//******************移植注意点END**********************************
+//******************Porting Notes END**********************************
 
-/* 断点功能end */
+/* breakpoint functionality end */
 #endif /* #if SUPPORT_BP_DEBUG == 1 */
 
 //from mask export
@@ -97,7 +97,7 @@ SECTIONS
 
 /*SUPPORT_BP_EXTENSIONS */
 #if SUPPORT_BP_DEBUG == 1
-/* 断点功能初始化 */
+/* breakpoint functionality initialization */
 
     . = ORIGIN(bp_ram);
 	.bp_code :SUBALIGN(4)
@@ -123,10 +123,10 @@ SECTIONS
     _bp_size  = SIZEOF(.bp_code);
 
 
-//******************移植注意点**********************************
+//******************Porting Notes**********************************
     _bp_store_addr = _text_begin + _text_size;
-//******************移植注意点END**********************************
-/* 断点功能end */
+//******************Porting Notes END**********************************
+/* breakpoint functionality end */
 
 #endif /* #if SUPPORT_BP_DEBUG == 1 */
 }

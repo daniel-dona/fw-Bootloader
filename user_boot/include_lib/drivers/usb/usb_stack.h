@@ -31,17 +31,17 @@ enum {
 #endif
 struct usb_device_t {
     u8 baddr;
-    u8 bsetup_phase;          //ep0 setup状态机
-    u16 wDataLength;    //ep0 setup data stage数据长度
+    u8 bsetup_phase;          //ep0 setup state machine
+    u16 wDataLength;    //ep0 setup data stage data length
 
-    u8 *setup_buffer;   //本次传输的bufer地址
-    u8 *setup_ptr;      //当前传输的位置
+    u8 *setup_buffer;   //buffer address for this transfer
+    u8 *setup_ptr;      //current transfer position
     u32(*setup_hook)(struct usb_device_t *, struct usb_ctrlrequest *);
     u32(*setup_recv)(struct usb_device_t *, struct usb_ctrlrequest *);
 
     u8 bDeviceStates;
-    u8 bDataOverFlag;    //ep0 0包标识
-    u8 wDeviceClass;    // 设备类
+    u8 bDataOverFlag;    //ep0 zero-packet flag
+    u8 wDeviceClass;    //device class
     u8 bRemoteWakup: 1;
     u8 baddr_config: 1;
 #if USB_MAX_HW_NUM == 2

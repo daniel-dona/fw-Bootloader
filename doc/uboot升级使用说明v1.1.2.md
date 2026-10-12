@@ -1,13 +1,13 @@
-# uboot 升级协议
+# uboot Upgrade Protocol
 
 ---
 
-| 版本号 | 备注     |
-| ------ | -------- |
-| v1.1.2 | 初始版本 |
+| Version | Remarks |
+| ------- | ------- |
+| v1.1.2  | Initial version |
 
-## 一、uboot工程选择
-根据使用的芯片型号，选择对应的uboot工程。以AC632N为例，需要打开的工程为fw-Bootloader-main\user_boot\cpu\bd19\bd19_uboot.cbp。如图所示：
+## 1. Selecting the uboot Project
+Based on the chip model in use, select the corresponding uboot project. Taking AC632N as an example, the project to be opened is fw-Bootloader-main\user_boot\cpu\bd19\bd19_uboot.cbp. As shown in the figure:
 
 <br/>
 <div align="center">
@@ -15,10 +15,10 @@
 </div>
 <br/>
 
-## 二、升级模式选择
-uboot升级有 “串口升级模式” 和 “USB_HID升级模式” 两种。根据需求进行选择。
-### 1.串口升级模式配置
-打开 Project build options 设置，选择 Compiler settings，#defines设置，添加 USB_MODE=0 即可将 uboot 工程配置成串口升级模式。如图所示：
+## 2. Selecting the Upgrade Mode
+uboot upgrade has two modes: "Serial (UART) upgrade mode" and "USB_HID upgrade mode". Choose according to your requirements.
+### 1. Serial Upgrade Mode Configuration
+Open the Project build options settings, select Compiler settings, #defines settings, and add USB_MODE=0 to configure the uboot project into serial upgrade mode. As shown in the figure:
 
 <br/>
 <div align="center">
@@ -26,7 +26,7 @@ uboot升级有 “串口升级模式” 和 “USB_HID升级模式” 两种。�
 </div>
 <br/>
 
-app\src\user.c文件，ut_device_mode(tx, rx, bud)函数设置串口TX脚，RX脚，波特率。如图所示：
+In the app\src\user.c file, the ut_device_mode(tx, rx, bud) function sets the serial TX pin, RX pin, and baud rate. As shown in the figure:
 
 <br/>
 <div align="center">
@@ -34,8 +34,8 @@ app\src\user.c文件，ut_device_mode(tx, rx, bud)函数设置串口TX脚，RX�
 </div>
 <br/>
 
-### 2.USB_HID升级模式配置
-打开 Project build options 设置，选择 Compiler settings，#defines设置，添加 USB_MODE=1 即可将 uboot 工程配置成USB_HID升级模式。如图所示：
+### 2. USB_HID Upgrade Mode Configuration
+Open the Project build options settings, select Compiler settings, #defines settings, and add USB_MODE=1 to configure the uboot project into USB_HID upgrade mode. As shown in the figure:
 
 <br/>
 <div align="center">
@@ -43,25 +43,25 @@ app\src\user.c文件，ut_device_mode(tx, rx, bud)函数设置串口TX脚，RX�
 </div>
 <br/>
 
-选择 usb_hid 升级模式时，uboot 工程的 usb_vid，usb_pid 与 usb_hid 上位机的 usb_vid，usb_pid 需要保持一致 。
+When selecting the usb_hid upgrade mode, the usb_vid and usb_pid of the uboot project must be kept consistent with the usb_vid and usb_pid of the usb_hid host tool.
 
-uboot 工程修改 usb_vid 和 usb_pid 方法如图所示：
+The way to modify usb_vid and usb_pid in the uboot project is shown in the figure:
 <br/>
 <div align="center">
     <img src="./attch\uboot_usb_vid_pid.png">
 </div>
 <br/>
 
-usb_hid 上位机修改 usb_vid 和 usb_pid 方法如图所示：（打开pc_demo\usb_hid\main.cpp查看）
+The way to modify usb_vid and usb_pid in the usb_hid host tool is shown in the figure: (open pc_demo\usb_hid\main.cpp to check)
 <br/>
 <div align="center">
     <img src="./attch\usb_hid_usb_vid_pid.png">
 </div>
 <br/>
 
-## 三、调试功能配置
-### 1.使能调试打印功能
-打开 Project build options 设置，选择 Compiler settings，#defines设置，添加 __DEBUG 即可使能调试打印功能。如图所示：
+## 3. Configuring Debug Features
+### 1. Enabling the Debug Print Feature
+Open the Project build options settings, select Compiler settings, #defines settings, and add __DEBUG to enable the debug print feature. As shown in the figure:
 
 <br/>
 <div align="center">
@@ -69,8 +69,8 @@ usb_hid 上位机修改 usb_vid 和 usb_pid 方法如图所示：（打开pc_dem
 </div>
 <br/>
 
-### 2.调试打印脚和波特率配置
-方法一：使用 isd_config.ini 配置文件中的引脚和波特率配置。如图所示：
+### 2. Configuring the Debug Print Pin and Baud Rate
+Method 1: Use the pin and baud rate configuration in the isd_config.ini configuration file. As shown in the figure:
 
 <br/>
 <div align="center">
@@ -78,7 +78,7 @@ usb_hid 上位机修改 usb_vid 和 usb_pid 方法如图所示：（打开pc_dem
 </div>
 <br/>
 
-在 main 函数中调用 uart_init(uttx, ut_buad) 函数，如图所示：
+Call the uart_init(uttx, ut_buad) function in the main function, as shown in the figure:
 
 <br/>
 <div align="center">
@@ -86,7 +86,7 @@ usb_hid 上位机修改 usb_vid 和 usb_pid 方法如图所示：（打开pc_dem
 </div>
 <br/>
 
-方法二：代码中直接设置打印脚和波特率，以PA5，1000000波特率为例。如图所示：
+Method 2: Set the print pin and baud rate directly in the code, taking PA5 with a 1000000 baud rate as an example. As shown in the figure:
 
 <br/>
 <div align="center">
@@ -94,10 +94,10 @@ usb_hid 上位机修改 usb_vid 和 usb_pid 方法如图所示：（打开pc_dem
 </div>
 <br/>
 
-## 四、升级触发方式配置
-升级触发方式有 I/O 口检测触发和 sdk 软件复位触发。
-### 1. I/O 口触发
-进入uboot，main函数中，通过检测一个I/O的电平状态，选择是否跳转到升级流程。如图所示：
+## 4. Configuring the Upgrade Trigger Method
+The upgrade trigger methods are I/O pin detection trigger and sdk software reset trigger.
+### 1. I/O Pin Trigger
+When entering uboot, in the main function, the logic level state of an I/O pin is detected to decide whether to jump to the upgrade flow. As shown in the figure:
 
 <br/>
 <div align="center">
@@ -105,8 +105,8 @@ usb_hid 上位机修改 usb_vid 和 usb_pid 方法如图所示：（打开pc_dem
 </div>
 <br/>
 
-### 2.SDK软件复位触发
-user.h文件中，使能 USE_UPGRADE_MAGIC 宏。如图所示：
+### 2. SDK Software Reset Trigger
+In the user.h file, enable the USE_UPGRADE_MAGIC macro. As shown in the figure:
 
 <br/>
 <div align="center">
@@ -114,13 +114,13 @@ user.h文件中，使能 USE_UPGRADE_MAGIC 宏。如图所示：
 </div>
 <br/>
 
-在 sdk 工程中，添加以下代码实现 SDK软件复位触发。（任意位置）
+In the sdk project, add the following code to implement the SDK software reset trigger. (at any location)
 
     extern u32 nvram_list[];
     #define NV_RAM_LIST_ADDR nvram_list
     static u8 uboot_uart_upgrade_mode_magic[8] = {'u', 'b', 'o', 'o', 't', 0x5a, 's', 't', };
     static u8 uboot_uart_upgrade_succ_magic[8] = {'u', 'b', 'o', 'o', 't', 0xa5, 'o', 'k', };
-    void check_uboot_uart_upgrade() //检查 uboot 升级是否成功，须在 memory_init();前检测该标志
+    void check_uboot_uart_upgrade() // check whether the uboot upgrade succeeded; this flag must be detected before memory_init();
     {
         if (memcmp((char *)NV_RAM_LIST_ADDR, uboot_uart_upgrade_succ_magic, sizeof(uboot_uart_upgrade_succ_magic)) == 0) {
             memset((char *)NV_RAM_LIST_ADDR, 0, sizeof(uboot_uart_upgrade_succ_magic));
@@ -128,14 +128,14 @@ user.h文件中，使能 USE_UPGRADE_MAGIC 宏。如图所示：
         }
     }
     void hw_mmu_disable(void);
-    void chip_reboot_entry_uboot_uart_upgrade_mode()    // uboot 升级跳转函数
+    void chip_reboot_entry_uboot_uart_upgrade_mode()    // uboot upgrade jump function
     {
         memcpy((char *)NV_RAM_LIST_ADDR, uboot_uart_upgrade_mode_magic, sizeof(uboot_uart_upgrade_mode_magic));
         hw_mmu_disable();
         cpu_reset();
     }
 
-在 maskron_stubs.ld 文件，添加以下代码， 路径为 fw-Bootloader-main\user_boot\cpu\bd19\output 。如图所示：
+In the maskron_stubs.ld file, add the following code, the path being fw-Bootloader-main\user_boot\cpu\bd19\output . As shown in the figure:
 
     nvram_list = ABSOLUTE(0x800);
 
@@ -145,7 +145,7 @@ user.h文件中，使能 USE_UPGRADE_MAGIC 宏。如图所示：
 </div>
 <br/>
 
-不同的芯片型号，对应不同的参数：
+Different chip models correspond to different parameters:
 
     BD19: nvram_list = ABSOLUTE(0x800);
     BR23: nvram_list = ABSOLUTE(0x10800);
@@ -157,23 +157,23 @@ user.h文件中，使能 USE_UPGRADE_MAGIC 宏。如图所示：
     SH55: nvram_list = ABSOLUTE(0x4ee4);
     
 
-在需要执行 uboot 升级的位置，调用 chip_reboot_entry_uboot_uart_upgrade_mode() 函数即可。
+At the location where the uboot upgrade needs to be executed, simply call the chip_reboot_entry_uboot_uart_upgrade_mode() function.
 
-升级完成后，sdk 调用 check_uboot_uart_upgrade() 函数检测升级是否成功（需要放在memory_init( ) 前）。
+After the upgrade is complete, the sdk calls the check_uboot_uart_upgrade() function to detect whether the upgrade succeeded (it must be placed before memory_init( ) ).
 
-## 五、上位机使用
-上位机工具有 win-uart, win-usb_hid, android-usb_hid三种，放在 fw-Bootloader\update_tools\tools 路径下，开放源码。
+## 5. Using the Host Tool
+There are three host tools: win-uart, win-usb_hid, and android-usb_hid, located under the fw-Bootloader\update_tools\tools path, with open source code.
 
-### 1.串口升级上位机界面说明如下：
+### 1. The serial upgrade host tool interface is described as follows:
 
-    1.选择对应的串口
-    2.设置波特率
-    3.升级 uboot（一般不勾选此项） 
-    4.通信加密秘钥（uboot默认秘钥为 12345678（10进制），秘钥可在 user.c 文件，communication_key 变量修改）
-    5.刷新串口
-    6.升级文件选择
-    7.开始升级
-    注意：选择串口升级时，包长自定义，默认长度是4K。
+    1. Select the corresponding serial port
+    2. Set the baud rate
+    3. Upgrade uboot (this option is generally not checked) 
+    4. Communication encryption key (the uboot default key is 12345678 (decimal); the key can be modified in the user.c file, in the communication_key variable)
+    5. Refresh serial port
+    6. Select the upgrade file
+    7. Start the upgrade
+    Note: when selecting serial upgrade, the packet length is custom, with a default length of 4K.
 
 <br/>
 <div align="center">
@@ -181,13 +181,13 @@ user.h文件中，使能 USE_UPGRADE_MAGIC 宏。如图所示：
 </div>
 <br/>
 
-### 2.win-USB_HID 升级上位机说明如下：（暂时没有图形界面）
+### 2. The win-USB_HID upgrade host tool is described as follows: (no graphical interface for now)
 
-    1. 打开 fw-Bootloader-main\update_tools\tools\win-usb_hid\build-out-bin 文件夹 ；
-    2. 将生成的 jl_isd.bin 文件复制到文件夹 ；
-    3. 打开 Powershell 窗口 ；
-    4. 输入 .\UbootHid.exe ， 回车执行 ；
-    5. 升级完成，复位；
+    1. Open the fw-Bootloader-main\update_tools\tools\win-usb_hid\build-out-bin folder ;
+    2. Copy the generated jl_isd.bin file into the folder ;
+    3. Open a Powershell window ;
+    4. Enter .\UbootHid.exe and press Enter to execute ;
+    5. Upgrade complete, reset;
 
 <br/>
 <div align="center">
@@ -213,10 +213,10 @@ user.h文件中，使能 USE_UPGRADE_MAGIC 宏。如图所示：
 </div>
 <br/>
 
-### 3.win-USB_HID 升级上位机界面说明如下：
-    1.将小机与手机连接后，打开 APP，显示 Device:online表示连接成功 ；
-    2.点击 Select file，选择待升级的 jl_isd.bin 文件 ；
-    3.点击 Upgrade，等待升级完成后，会提示 success ；
+### 3. The win-USB_HID upgrade host tool interface is described as follows:
+    1. After connecting the device to the phone, open the APP; the display Device:online indicates a successful connection ;
+    2. Click Select file to select the jl_isd.bin file to be upgraded ;
+    3. Click Upgrade; after the upgrade completes, success will be displayed ;
 
 <br/>
 <div align="center">
@@ -229,30 +229,27 @@ user.h文件中，使能 USE_UPGRADE_MAGIC 宏。如图所示：
 </div>
 <br/>
 
-## 六、测试流程
-    1. build uboot 工程，生成新的 uboot.boot 文件，路径为 cpu\bd19\output ；
-    2. 复制 uboot.boot 文件到 sdk 的下载目录，即 \cpu\bd19\tools 文件夹 ；
-    3. 编译下载 sdk 到小机，此时生成 jl_isd.bin 文件为程序A，先备份一下程序A ；
-    4. 修改 sdk（如修改一些打印），再编译下载到小机， 此时生成 jl_isd.bin 文件为程序B ；
-    5. 通过上面步骤，我们得到正在小机上运行的程序B，和待升级的程序A ；
-    6. PC 与小机通过串口连接，小机上电，触发升级后进入升级模式等待升级（串口升级或 USB_HID 升级） ；
-    7. PC 上位机设置好相应的参数（com口，波特率，秘钥，升级文件）；
-    8. 点击 Start Update 即可开始升级；
+## 6. Test Flow
+    1. Build the uboot project to generate a new uboot.boot file, located at cpu\bd19\output ;
+    2. Copy the uboot.boot file to the sdk download directory, i.e., the \cpu\bd19\tools folder ;
+    3. Build and download the sdk to the device; the generated jl_isd.bin file at this point is program A; back up program A first ;
+    4. Modify the sdk (e.g., change some prints), then build and download it to the device again; the generated jl_isd.bin file at this point is program B ;
+    5. Through the steps above, we get program B currently running on the device, and program A to be upgraded ;
+    6. Connect the PC to the device via serial port; power on the device; after triggering the upgrade, it enters upgrade mode and waits for the upgrade (serial upgrade or USB_HID upgrade) ;
+    7. Set the corresponding parameters (COM port, baud rate, key, upgrade file) in the PC host tool;
+    8. Click Start Update to begin the upgrade;
 
-## 七、注意事项
-    1. 小机运行中的程序所使用的 uboot.boot 和待升级文件使用的 uboot.boot 需要一致 ；
-    2. 建议将程序强制设置成 4K 对齐，在 isd_config.ini 文件添加以下代码；
+## 7. Precautions
+    1. The uboot.boot used by the program running on the device and the uboot.boot used by the file to be upgraded must be consistent ;
+    2. It is recommended to force the program to be aligned to 4K; add the following code to the isd_config.ini file;
     SPECIAL_OPT=0; 
     FORCE_4K_ALIGN=YES;
-    3. 若无法使用4k对齐(代码空间不够)，请确保升级用的bin文件，是在用强制升级工具连接样机下载代码时生成的；
-    4. 如果 isd_config.ini 文件有 EOFFSET=1；的配置，则需要在 isd_config.ini 文件里加上 GENERATE_TWO_BIN = YES ;用以生成 0K/4K 文件；
-        然后根据 upgrade_eoffset（uboot 代码里有），等于 4k 就用 jl_isd_4K.bin,否则用 jl_isd_0K.bin。如果没有 EOFFSET=1 ;直接使用 jl_isd.bin 文件即可；
-    5. 选择 usb_hid 升级时，由于 hid 传输包长最大为 64Byte，写 flash 的命令还会占用一些 Byte，所以实际写到 flash 的数据长度 = （64 - 写 flash 命令长度）；如图所示：（打开pc_demo\usb_hid\main.cpp查看）
+    3. If 4K alignment cannot be used (insufficient code space), please make sure the bin file used for the upgrade is generated when downloading code to the sample device connected with the forced upgrade tool;
+    4. If the isd_config.ini file contains the configuration EOFFSET=1;, then add GENERATE_TWO_BIN = YES ; in the isd_config.ini file to generate the 0K/4K files;
+        then according to upgrade_eoffset (in the uboot code), if it equals 4k use jl_isd_4K.bin, otherwise use jl_isd_0K.bin. If there is no EOFFSET=1;, simply use the jl_isd.bin file;
+    5. When selecting usb_hid upgrade, since the maximum hid transfer packet length is 64Byte, and the write flash command also occupies some Bytes, the actual data length written to flash = (64 - write flash command length); as shown in the figure: (open pc_demo\usb_hid\main.cpp to check)
 <br/>
 <div align="center">
     <img src="./attch\write_flash_max_len.png">
 </div>
 <br/>
-
-
-

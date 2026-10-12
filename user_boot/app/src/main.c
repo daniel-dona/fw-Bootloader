@@ -71,7 +71,7 @@ int main(void)
     dec_isd_cfg_ini("UTBD", &ut_buad, ptr);
 
     uart_init(uttx, ut_buad);
-    /* uart_init("USBDP", 1000000); //debug串口 */
+    /* uart_init("USBDP", 1000000); //debug serial (UART) */
     /* printf("debug IO:%s,buad:%d\n",uttx,ut_buad); */
 #endif
 
@@ -81,13 +81,13 @@ int main(void)
 
     arch_init();
 
-#if 0//写保护示例
+#if 0//write protection example
     struct  flash_info_t *flash_info = get_flash_info();
     u32 flash_id = flash_info->id;
     flash_set_wp(flash_id, 128);
 #endif
 
-    u8 err = jlfs_mount();//非0表示fs初始化失败，可能是升级未完成
+    u8 err = jlfs_mount();//non-zero indicates fs initialization failed, possibly because the upgrade did not complete
     if (err) {
         log_error("jlfs_mount err:%d\n", err);
     }

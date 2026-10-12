@@ -1,33 +1,33 @@
 # fw-Bootloader
 Customized bootloader for JL series(AC63/...)
 
-JL 系列user boot固件程序
+JL series user boot firmware program
 
-本仓库包含user boot release 版本代码，线下线上支持同步发布，支持用户进行自定义串口升级和 usb_hid 升级。
+This repository contains the user boot release version of the code. It supports synchronized offline and online release, and allows users to perform custom serial (UART) upgrade and usb_hid upgrade.
 
-本工程提供的例子，需要结合对应命名规则的库文件(lib.a) 和对应的子仓库进行编译.
+The examples provided in this project need to be built together with the library files (lib.a) following the corresponding naming convention and the corresponding sub-repository.
 
-快速开始
+Quick Start
 ------------
 
-欢迎使用杰理开源项目，在开始进入项目之前，请详细阅读介绍文档
+Welcome to the Jieli open source project. Before you start working on the project, please read the introduction documents in detail.
 
-工具链
+Toolchain
 ------------
 
-使用的工具链与标准SDK一致。如遇到《"错误: uboot.boot数据的CRC校验错误"错误:生成失败，无效的F文件，请重新选择系统找不到指定的文件。》这样的错误，需要更新最新的工具：https://doc.zh-jieli.com/Tools/zh-cn/other_info/index.html
+The toolchain used is the same as the standard SDK. If you encounter errors such as "Error: CRC check error of uboot.boot data", "Error: generation failed, invalid F file, please re-select", or "The system cannot find the specified file", you need to update to the latest tools: https://doc.zh-jieli.com/Tools/zh-cn/other_info/index.html
 
-介绍文档
+Introduction Documents
 ------------
 
-uboot 升级使用说明：[uboot升级使用说明](doc/uboot%E5%8D%87%E7%BA%A7%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8Ev1.1.2.md) 
+uboot upgrade usage guide: [uboot upgrade usage guide](doc/uboot%E5%8D%87%E7%BA%A7%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8Ev1.1.2.md) 
 
-uboot 升级协议流程：[uboot升级协议流程](doc/uboot%E5%8D%87%E7%BA%A7%E5%8D%8F%E8%AE%AE%E6%B5%81%E7%A8%8Bv1.1.2.md) 
+uboot upgrade protocol flow: [uboot upgrade protocol flow](doc/uboot%E5%8D%87%E7%BA%A7%E5%8D%8F%E8%AE%AE%E6%B5%81%E7%A8%8Bv1.1.2.md) 
 
 
-SDK与BootLoader系列对应说明
+SDK and BootLoader series correspondence
 ------------
-| SDK型号    | BootLoader对应  |
+| SDK model  | Corresponding BootLoader  |
 |  ----      | ----        |
 | AC693N/AC693X  | bd19 |
 | AC635N/AC695X/AC695N  | br23 |
@@ -39,22 +39,22 @@ SDK与BootLoader系列对应说明
 | AC791N         | wl82 |
 | AC701N         | br28 |
 
-例如: SDK型号使用的是AC701N, 使用user_boot\cpu\br28\br28_uboot.cbp作为工程入口。
+For example: if the SDK model used is AC701N, use user_boot\cpu\br28\br28_uboot.cbp as the project entry.
 
-编译工程
+Building the Project
 -------------
 
-SDK 同时支持Codeblock 和 Make 编译环境，请确保编译前已经搭建好编译环境，
+The SDK supports both the Codeblocks and Make build environments. Please make sure the build environment has been set up before building.
 
-* Codeblock 编译 : 进入对应的工程目录并找到后缀为 `.cbp` 的文件, 双击打开便可进行编译.
+* Codeblocks build: enter the corresponding project directory and find the file with the `.cbp` suffix; double-click it to open and start building.
   
 
-硬件环境
+Hardware Environment
 -------------
 
-与标准SDK一致，生成的uboot.boot要添加到原SDK下载目录调试，流程见 [uboot升级使用说明](doc/uboot%E5%8D%87%E7%BA%A7%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8Ev1.1.2.md)
+Same as the standard SDK, the generated uboot.boot must be added to the original SDK download directory for debugging. See [uboot upgrade usage guide](doc/uboot%E5%8D%87%E7%BA%A7%E4%BD%BF%E7%94%A8%E8%AF%B4%E6%98%8Ev1.1.2.md) for the procedure.
 
-免责声明
+Disclaimer
 ------------
 
-user boot 支持多系列芯片开发，鉴于boot的特殊性，请务必进行充分测试.
+user boot supports development for multiple chip series. Given the special nature of the boot loader, please be sure to perform thorough testing.
