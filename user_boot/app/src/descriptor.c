@@ -2,6 +2,11 @@
 #include "string.h"
 #include "printf.h"
 #include "irq.h"
+#include "spl_version.h"
+
+#ifndef SPL_GIT_SHORT
+#define SPL_GIT_SHORT "dev"
+#endif
 
 static const u8 sDeviceDescriptor[] = { //<Device Descriptor
     USB_DT_DEVICE_SIZE,      // bLength: Size of descriptor

@@ -47,8 +47,6 @@ export OBJSIZEDUMP := $(TOOL_DIR)/objsizedump
 SYS_LIB_DIR := $(TOOL_DIR)/../lib/r3
 SYS_INC_DIR := $(TOOL_DIR)/../include
 EXT_CFLAGS  := -D__SHELL__ # needed on Linux to ensure download.c is handled correctly
-SPL_GIT_SHORT := $(shell git rev-parse --short HEAD 2>/dev/null || echo dev)
-EXT_CFLAGS  += -DSPL_GIT_SHORT=\"$(SPL_GIT_SHORT)\"
 export PATH:=$(TOOL_DIR):$(PATH)
 
 ## Post-processing script
@@ -237,6 +235,7 @@ all: pre_build $(OUT_ELF)
 
 pre_build:
 	$(info +PRE-BUILD)
+	$(QUITE) echo '#define SPL_GIT_SHORT "'$(shell git rev-parse --short HEAD 2>/dev/null || echo dev)'"' > ../../app/inc/spl_version.h
 	$(QUITE) $(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -D__LD__ -E -P ../../cpu/br23/output/ram_ld.c -o ../../cpu/br23/output/ram.ld
 
 clean:
