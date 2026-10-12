@@ -15,7 +15,6 @@ DEVICE  ?= sg0
 
 .PHONY: spl image validate flash clean
 
-	echo "host tool: build/uboothid_cli (sudo para hidraw, o udev)"
 
 spl:
 	$(MAKE) -C $(FWDIR) TOOL_DIR=$(TC)
