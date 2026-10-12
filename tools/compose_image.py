@@ -34,7 +34,8 @@ import argparse
 ap = argparse.ArgumentParser(description='Compone la imagen de flash 1MiB: factory dump + SPL propio + isd_config')
 ap.add_argument('--flash', default='tools/data/dump_flash_factory.bin')
 ap.add_argument('--bank', default='user_boot/cpu/br23/output/uboot_banklink_native.boot')
-ap.add_argument('--isd', default='tools/data/isd_config.bin')
+ap.add_argument('--isd', default='none',
+                   help="none = conserva la isd de fabrica del dump (recomendado)")
 ap.add_argument('--out', default='build/spl_image_full.bin')
 args = ap.parse_args()
 FLASH = args.flash

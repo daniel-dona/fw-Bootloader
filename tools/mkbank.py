@@ -4,7 +4,7 @@ plano que el ROM espera:
   hdr 16 B: u16 ver=1 | u16 size | u32 load=0x4000 | u32 off=0x10 | u16 crc16(payload) | u16 crc16(hdr[0:14])
   payload @0x10
 """
-import sys, struct
+import sys, os, struct
 sys.path.insert(0, __file__.rsplit('/', 1)[0])
 from jltech.crc import jl_crc16
 

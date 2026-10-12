@@ -961,6 +961,12 @@ def main(argv=None):
         elif cmd == "flash":
             img = open(args.file, "rb").read()
             if getattr(args, "spl", False):
+                init0 = hf.device_init()
+                if init0["addr"] != 0:
+                    print("error: running SPL does not support --spl "
+                          "(reports addr=0x%X len=%d); flash it from ROM MSC"
+                          % (init0["addr"], init0["len"]), file=sys.stderr)
+                    sys.exit(2)
                 img = img[:0x3000]
                 args.mode = 1
             hf.flash(img, args.name.encode(), args.mode, args.erase_type)

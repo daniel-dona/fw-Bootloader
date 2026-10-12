@@ -17,8 +17,7 @@ DEVICE  ?= sg0
 
 
 venv:
-	python3 -m venv .venv
-	.venv/bin/pip install --upgrade pip -r requirements.txt
+	if [ ! -d .venv ]; then python3 -m venv .venv && .venv/bin/pip install --upgrade pip -r requirements.txt; fi
 
 spl: venv
 	$(MAKE) -C $(FWDIR) TOOL_DIR=$(TC)
@@ -30,13 +29,14 @@ image: spl
 validate: image
 	$(PY) tools/validate_image.py $(IMAGE)
 
-flash:
+flash: validate
 	sudo $(PY) .tmp/jl-uboot-tool/jluboottool.py --device /dev/$(DEVICE) --chip br23 \
-	  --cmds "write 0 $(CURDIR)/$(IMAGE)"
+	  --cmds "write 0 $(CURDIR)/$(IMAGE)" "read 0 $(CURDIR)/build/rd_flash.bin"
 
 clean:
 	$(MAKE) -C $(FWDIR) clean
 	rm -rf build
+	rm -f $(BANK)
 
 udev:
 	sudo cp tools/70-daniboot.rules /etc/udev/rules.d/70-daniboot.rules
