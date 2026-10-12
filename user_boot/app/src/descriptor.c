@@ -30,28 +30,16 @@ static const u8 LANGUAGE_STR[] = {
     0x04, 0x03, 0x09, 0x04
 };
 static const u8 product_string[] = {
-    42,
+    18,
     0x03,
-    'U', 0x00,
-    'S', 0x00,
-    'B', 0x00,
-    ' ', 0x00,
-    'C', 0x00,
-    'o', 0x00,
-    'm', 0x00,
-    'p', 0x00,
-    'o', 0x00,
-    's', 0x00,
-    'i', 0x00,
-    't', 0x00,
-    'e', 0x00,
-    ' ', 0x00,
     'D', 0x00,
-    'e', 0x00,
-    'v', 0x00,
+    'a', 0x00,
+    'n', 0x00,
     'i', 0x00,
-    'c', 0x00,
-    'e', 0x00,
+    'B', 0x00,
+    'o', 0x00,
+    'o', 0x00,
+    't', 0x00,
 };
 static const u8 MANUFACTURE_STR[] = {
     34,         // the length of this descriptor is 34 bytes
