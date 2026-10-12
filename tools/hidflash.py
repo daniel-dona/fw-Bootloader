@@ -47,6 +47,7 @@ SYNC0 = 0xAA
 SYNC1 = 0x55
 
 CMD_DEVICE_INIT = 0xC0          # JL_SU_CMD_DEVICE_INIT
+CMD_ENTER_ROM_MSC = 0xD0        # comando propio del SPL: reinicio a MSC del ROM
 CMD_DEVICE_CHECK = 0xC1         # JL_SU_CMD_DEVICE_CHECK
 CMD_ERASE = 0xC2                # JL_SU_CMD_ERASE
 CMD_WRITE = 0xC3                # JL_SU_CMD_WRITE
@@ -589,6 +590,13 @@ class HidFlash:
         except HidTimeout:
             pass  # esperado: reset sin ACK
 
+    def enter_rom_msc(self):
+        """0xD0: boot-state magic del ROM + chip_reset -> MSC UBOOT1.00. Sin ACK."""
+        try:
+            self._xact(CMD_ENTER_ROM_MSC, expect_silence=True)
+        except HidTimeout:
+            pass  # esperado: reset sin ACK
+
     def updata_dual_bank_crc(self, crc, version=0):
         """0xCB: publica el CRC del banco activo (DUAL_BANK_MODE)."""
         self._xact(CMD_UPDATA_DUAL_BANK_CRC, struct.pack("<HH", crc & 0xFFFF, version))
@@ -834,6 +842,7 @@ def main(argv=None):
                    help="flashea el propio SPL: mode=1 y recorta el fichero a 0x3000 B")
 
     p = sub.add_parser("reboot", help="REBOOT (0xCA, sin respuesta)")
+    p = sub.add_parser("msc", help="ENTER_ROM_MSC (0xD0): reinicia en MSC del ROM")
     p = sub.add_parser("wait", help="espera el DaniBoot por udev y abre sesión (INIT)")
     p.add_argument("--secs", type=float, default=120.0,
                    help="tiempo máximo de espera (s)")
@@ -917,6 +926,9 @@ def main(argv=None):
         elif cmd == "reboot":
             hf.reboot()
             print("reboot enviado (sin ACK por diseño)")
+        elif cmd == "msc":
+            hf.enter_rom_msc()
+            print("0xD0 enviado; el SPL reinicia en MSC UBOOT1.00")
     finally:
         hf.close()
     return 0
