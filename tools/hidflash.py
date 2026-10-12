@@ -932,8 +932,6 @@ def main(argv=None):
             for r in rows:
                 print("|" + "|".join(c.ljust(x) for c, x in zip(r, w)) + "|")
             print(sep)
-            print("|" + "|".join(c.center(x) for c, x in zip(("region", "base", "size"), w)) + "|")
-            print(sep)
             for r in rows:
                 print("|" + "|".join(c.ljust(x) for c, x in zip(r, w)) + "|")
             print(sep)

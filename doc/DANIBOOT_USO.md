@@ -151,3 +151,23 @@ user_boot/app/src/descriptor.c  strings USB (Dani / Custom JL uboot / Commit)
 user_boot/cpu/br23/output/download.sh   POST-BUILD nativo (objcopy+mkbank)
 scripts…                    ram_ld.c 24K, .gitignore de artefactos
 ```
+
+## isd_config: por qué la custom colgaba el app
+
+Decodificado con `tools/isdcfg.py` (campos TLV @0x2CF0):
+
+| Campo | Factory (83 B) | Custom (115 B) |
+|---|---|---|
+| SPI | 4_3_0_1 | 4_3_0_1 |
+| RESET | PB01_00_0 | PB01_00_0 |
+| PSRAM | 0 | 0 |
+| VLVD | 04 | 04 |
+| UTTX | — | PB04 |
+| UTBD | — | 1000000 |
+| **ENTRY** | **—** | **0x01E00120** |
+
+El campo **ENTRY=0x01E00120** apunta a la zona de registros del chip (no a
+código válido): algo del arranque lo consume y salta ahí → el app se cuelga
+sin enumerar. La isd de fábrica no declara ENTRY y el app arranca.
+UTTX/UTBD eran la config UART del update antiguo (innecesaria: el update es
+HID). Regla: **usar siempre la isd de fábrica** (`compose_image.py --isd none`).
