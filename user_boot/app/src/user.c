@@ -4,6 +4,12 @@
 #include "usb/usb_stack.h"
 #include "atomic.h"
 #include "crc.h"
+#include "norflash.h"
+
+/* fallback RAW: si jlfs_fopen falla (sin JLFS), write/erase/crc operan sobre
+ * la flash con direccionamiento absoluto (zona de update @0x3000). */
+static u8 jlfs_ok = 0;
+#define SU_APP_BASE 0x3000
 #include "dec.h"
 
 #define LOG_TAG_CONST       UPGRADE
@@ -314,6 +320,17 @@ void jl_su_flash_crc()
     u32 l = flash_alignsize;
     u8 *p = get_global_buffer(l); //4K
 
+    if (!jlfs_ok) {
+        /* RAW: CRC por bloques leyendo la flash directamente */
+        for (int i = 0; i < block_count; i++) {
+            norflash_read(p, SU_APP_BASE + g_ops->crc_list.address + i * l, l);
+            dev_g_ops->crc_list.crc[i] = chip_crc16(p, l);
+        }
+        dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
+        dev_g_ops->cmd_len = 1 + 1 + block_count * 2;
+        set_remain_and_upgrade_rsp(JL_SU_CMD_FLASH_CRC);
+        return;
+    }
     log_info("%s() address:%x len:%d block_size:%d block_count:%d\n",
              __func__, g_ops->crc_list.address, g_ops->crc_list.len,
              g_ops->crc_list.block_size, block_count);
@@ -332,6 +349,15 @@ void jl_su_flash_crc()
 }
 void jl_su_erase()
 {
+    if (!jlfs_ok) {
+        /* RAW: erase de sector en la zona de update */
+        norflash_eraser(WINBOND_SECTOR_ERASE, SU_APP_BASE + g_ops->erase.address);
+        dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
+        dev_g_ops->cmd_len = 1 + 1;
+        set_remain_and_upgrade_rsp(JL_SU_CMD_ERASE);
+        return;
+    }
+
     /* log_info("%s() address %x %d\n", __func__, g_ops->erase.address, g_ops->erase.type); */
 
     jlfs_fseek(&upgrade_file, g_ops->erase.address);
@@ -367,6 +393,14 @@ void jl_su_erase()
 
 void jl_su_write_flash()
 {
+    if (!jlfs_ok) {
+        /* RAW: escritura absoluta en la zona de update */
+        u8 st = norflash_write(g_ops->write.data, SU_APP_BASE + g_ops->write.address, g_ops->write.data_length);
+        dev_g_ops->rsp_status = (st == 0) ? JL_SU_CMD_SUSS : JL_SU_CMD_WRITE_ERROR;
+        dev_g_ops->cmd_len = 1 + 1;
+        set_remain_and_upgrade_rsp(JL_SU_CMD_WRITE);
+        return;
+    }
     jlfs_fseek(&upgrade_file, g_ops->write.address);
     u32 r = jlfs_write(&upgrade_file, g_ops->write.data, g_ops->write.data_length);
     if (r != g_ops->write.data_length) {
@@ -505,8 +539,12 @@ u8 user_check_upgrade(u32 jlfs_err)
     }
 
     u8 err = jlfs_fopen_by_name(&upgrade_file, "app_dir_head", 0);
+    jlfs_ok = !err;
     if (err) {
         log_info("file open error !\n");
+        /* sin JLFS: seguir a USB update (enumeracion = senal de vida) */
+        usb_device_mode(0, HID_CLASS);
+        upgrade_loop();
         return 1;
     }
 
