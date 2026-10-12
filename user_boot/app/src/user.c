@@ -303,7 +303,7 @@ void jl_su_info()
     struct flash_info_t *fi = get_flash_info();
     const char *ver = SPL_GIT_SHORT;
     u32 version4 = 0;
-    u8 *body = (u8 *)dev_g_ops + 4; /* cuerpo tras [sync0 sync1 cmd_len cmd rsp] */
+    u8 *body = (u8 *)dev_g_ops + 6; /* cuerpo: la union empieza en +6 */
     int i;
 
     for (i = 0; i < 4 && ver[i]; i++) {
