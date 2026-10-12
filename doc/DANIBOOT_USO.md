@@ -37,19 +37,23 @@ make flash      # (alternativa) flashea por jluboottool, requiere ROM MSC
 Requiere root para /dev/hidrawN. El chip en marcha como DS4 hay que **reiniciarlo**
 (desenchufar/enchufar) para entrar en la ventana.
 
-Configuración inicial (UNA sola vez, instala la regla udev para hidraw sin root):
+"Configuración inicial (UNA sola vez): entorno python del repo + regla udev
+para hidraw sin root:
 
 ```bash
 cd /home/dani/steam_deck_mandos/custom_uboot/fw-Bootloader
-make udev
+make venv      # crea .venv (solo stdlib, sin dependencias externas)
+make udev      # requiere sudo esta única vez
 ```
+
+Y usa el python del repo: `PY=.venv/bin/python`.
 
 A partir de aquí, todos los comandos de `hidflash.py` van **sin sudo** y
 **esperan solos** al DaniBoot hasta 30 s (`--wait N` para cambiarlo), así que
 da igual si el chip está en la ventana, en la fase de app o reiniciándose:
 
 ```bash
-PY=/home/dani/steam_deck_mandos/.venv/bin/python
+PY=.venv/bin/python
 cd /home/dani/steam_deck_mandos/custom_uboot/fw-Bootloader
 $PY tools/hidflash.py check                         # abre sesión e identifica el chip
 ```

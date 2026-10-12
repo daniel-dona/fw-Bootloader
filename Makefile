@@ -6,7 +6,7 @@
 #   make flash     -> flashea (requiere el chip en modo UBOOT; device=/dev/sg0)
 #   make clean
 #
-PY      ?= python3
+PY      ?= $(CURDIR)/.venv/bin/python
 TC      ?= /home/dani/steam_deck_mandos/.tmp/jl_tc/jieli-linux-toolchains-20250324.1/pi32v2/bin
 FWDIR   := user_boot/cpu/br23
 BANK    := $(FWDIR)/output/uboot_banklink_native.boot
@@ -16,7 +16,11 @@ DEVICE  ?= sg0
 .PHONY: spl image validate flash udev clean
 
 
-spl:
+venv:
+	python3 -m venv .venv
+	.venv/bin/pip install --upgrade pip -r requirements.txt
+
+spl: venv
 	$(MAKE) -C $(FWDIR) TOOL_DIR=$(TC)
 
 image:

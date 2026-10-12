@@ -1,3 +1,4 @@
 build/
 user_boot/app/inc/spl_version.h
 __pycache__/
+.venv/
