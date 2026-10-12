@@ -29,10 +29,12 @@ Reglas de oro (verificadas contra user.c):
     después calcula CRC).
 
 SEGURIDAD: ningún acceso a hardware por defecto. `selftest` (default) corre 100% offline
-contra la simulación del SPL. Cualquier subcomando que toque /dev/hidrawN exige --go.
+Detección por udev/sysfs del producto propio y reintentos automáticos dentro de la ventana.
 """
 
 import argparse
+import errno
+import time
 import os
 import select
 import struct
@@ -526,6 +528,19 @@ class HidFlash:
         vid, pid, rsdk = struct.unpack("<4s16sI", r[:24])
         return {"vid": vid, "pid": pid.rstrip(b"\x00"), "sdk_id": rsdk}
 
+    def device_info(self):
+        """0xD1 (comando propio del SPL): identificacion completa.
+        rsp: flash_id u32, capacity u32, spl_base u32, app_base u32,
+             isd_base u32, version4 u32 (ASCII MSB-first), uuid 16 B."""
+        r = self._xact(0xD1)
+        fid, cap, spl, app, isd, ver4 = struct.unpack("<6I", r[:24])
+        uuid = r[24:40]
+        version = bytes([ver4 >> 24 & 0xFF, ver4 >> 16 & 0xFF,
+                         ver4 >> 8 & 0xFF, ver4 & 0xFF]).decode("ascii", "replace")
+        return {"flash_id": "0x%08X" % fid, "flash_capacity": cap,
+                "regions": {"spl": spl, "app": app, "isd": isd},
+                "commit": version, "uuid": uuid.hex()}
+
     def device_init(self, file_name=b"app_dir_head", mode=0):
         """0xC0: req file_name[16] + mode; rsp addr/len/eoffset/alignsize.
         mode 0 = abrir por nombre; mode 3 = banco idle (dual bank)."""
@@ -770,29 +785,43 @@ def selftest():
 # CLI
 # ----------------------------------------------------------------------------------
 
-def _open_hw(args):
-    if not args.go:
-        print("OPERACIÓN BLOQUEADA: los subcomandos de hardware exigen --go "
-              "(la sesión de flasheo la hace el operador).", file=sys.stderr)
-        sys.exit(2)
-    path = args.device
-    if path == "auto":
-        path = find_hidraw()
-        if path is None:
-            print("no se encontró ningún HID 4c4a:4155 en sysfs "
-                  "(¿el SPL está enumerado?). Usa --device /dev/hidrawN para forzar.",
-                  file=sys.stderr)
-            sys.exit(2)
-        print("device: %s (4c4a:4155 autodetectado)" % path, file=sys.stderr)
+def _try_open(path, args):
+    """Abre el hidraw; PermissionError -> hint de udev (make udev, una vez)."""
     try:
         return HidFlash(HidrawTransport(path), trace=args.trace, timeout=args.timeout)
-    except PermissionError as e:
-        print("sin permisos para %s (prueba con sudo o udev rule): %s" % (path, e),
+    except PermissionError:
+        print("sin permisos para %s. Instala la regla udev UNA vez:  make udev" % path,
               file=sys.stderr)
         sys.exit(2)
     except OSError as e:
+        if e.errno in (errno.ENODEV, errno.ENOENT):
+            return None  # el chip desapareció (fin de ventana / reset): reintentar
         print("no se puede abrir %s: %s" % (path, e), file=sys.stderr)
         sys.exit(2)
+
+
+def _open_hw(args):
+    """Localiza y abre el DaniBoot. Si no está, espera --wait segundos
+    (cubre la ventana de 5 s y los ciclos de reset)."""
+    deadline = time.time() + args.wait
+    path = None if args.device == "auto" else args.device
+    while True:
+        if path is None:
+            path = find_hidraw(product=PRODUCT_NAME)
+            if path is None and time.time() >= deadline:
+                print("no hay ningún %s enumerado en %ss. ¿El chip está en la "
+                      "ventana de update? (reinicia el chip y reintenta; "
+                      "la ventana dura %ds)" % (PRODUCT_NAME, args.wait, WINDOW_MS // 1000),
+                      file=sys.stderr)
+                sys.exit(2)
+        if path is not None:
+            hf = _try_open(path, args)
+            if hf is not None:
+                if args.device == "auto":
+                    print("device: %s (%s autodetectado)" % (path, PRODUCT_NAME),
+                          file=sys.stderr)
+                return hf
+        time.sleep(0.1)
 
 
 def main(argv=None):
@@ -804,8 +833,8 @@ def main(argv=None):
                          "(default) o ruta explícita p.ej. /dev/hidraw7")
     ap.add_argument("--trace", action="store_true", help="volcado hex de frames")
     ap.add_argument("--timeout", type=float, default=1.0, help="timeout de respuesta (s)")
-    ap.add_argument("--go", action="store_true",
-                    help="permite acceso al hidraw (obligatorio para cualquier cmd de HW)")
+    ap.add_argument("--wait", type=float, default=30.0,
+                    help="segundos esperando al DaniBoot si no está enumerado (default 30)")
     sub = ap.add_subparsers(dest="cmd")
 
     sub.add_parser("selftest", help="test offline completo (default, sin hardware)")
@@ -841,13 +870,9 @@ def main(argv=None):
     p.add_argument("--spl", action="store_true",
                    help="flashea el propio SPL: mode=1 y recorta el fichero a 0x3000 B")
 
+    p = sub.add_parser("info", help="toda la informacion del chip: IDs, flash, regiones, commit")
     p = sub.add_parser("reboot", help="REBOOT (0xCA, sin respuesta)")
     p = sub.add_parser("msc", help="ENTER_ROM_MSC (0xD0): reinicia en MSC del ROM")
-    p = sub.add_parser("wait", help="espera el DaniBoot por udev y abre sesión (INIT)")
-    p.add_argument("--secs", type=float, default=120.0,
-                   help="tiempo máximo de espera (s)")
-    p = sub.add_parser("sim", help="sesión interactiva contra el simulador (sin hardware)")
-
     args = ap.parse_args(argv)
     cmd = args.cmd or "selftest"
 
@@ -866,34 +891,17 @@ def main(argv=None):
             return 0
         return selftest()
 
-    if cmd == "wait":
-        import time
-        deadline = time.time() + args.secs
-        while time.time() < deadline:
-            path = find_hidraw(product=PRODUCT_NAME)
-            if path:
-                try:
-                    hf2 = HidFlash(HidrawTransport(path), trace=args.trace,
-                                   timeout=args.timeout)
-                    try:
-                        info = hf2.device_check()
-                        print("sesión abierta: %s" % path)
-                        print(" check:", info)
-                        init = hf2.device_init(b"app_dir_head", 0)
-                        print(" init :", init)
-                        hf2.close()
-                        return 0
-                    except Exception as e:
-                        hf2.close()  # fuera de ventana: reintentar
-                except OSError:
-                    pass
-            time.sleep(0.1)
-        print("timeout esperando %s" % PRODUCT_NAME, file=sys.stderr)
-        return 1
-
     hf = _open_hw(args)
     try:
-        if cmd == "check":
+        if cmd == "info":
+            print(" check:", hf.device_check())
+            print(" init :", hf.device_init())
+            i = hf.device_info()
+            print(" flash : %s, %d bytes (%.0f KB)" % (i["flash_id"], i["flash_capacity"], i["flash_capacity"] / 1024))
+            print(" uuid  :", i["uuid"])
+            print(" regiones:", i["regions"])
+            print(" commit:", i["commit"])
+        elif cmd == "check":
             print(hf.device_check())
         elif cmd == "init":
             print(hf.device_init(args.name, args.mode))

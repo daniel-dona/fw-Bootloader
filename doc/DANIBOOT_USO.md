@@ -37,24 +37,35 @@ make flash      # (alternativa) flashea por jluboottool, requiere ROM MSC
 Requiere root para /dev/hidrawN. El chip en marcha como DS4 hay que **reiniciarlo**
 (desenchufar/enchufar) para entrar en la ventana.
 
+Configuración inicial (UNA sola vez, instala la regla udev para hidraw sin root):
+
+```bash
+cd /home/dani/steam_deck_mandos/custom_uboot/fw-Bootloader
+make udev
+```
+
+A partir de aquí, todos los comandos de `hidflash.py` van **sin sudo** y
+**esperan solos** al DaniBoot hasta 30 s (`--wait N` para cambiarlo), así que
+da igual si el chip está en la ventana, en la fase de app o reiniciándose:
+
 ```bash
 PY=/home/dani/steam_deck_mandos/.venv/bin/python
 cd /home/dani/steam_deck_mandos/custom_uboot/fw-Bootloader
-sudo $PY tools/hidflash.py --go wait --secs 25      # espera el DaniBoot y abre sesión
+$PY tools/hidflash.py check                         # abre sesión e identifica el chip
 ```
 
 ### Flashear el app (zona 0x3000+, hasta 1036288 B)
 
 ```bash
-sudo $PY tools/hidflash.py --go flash --file app.bin
+$PY tools/hidflash.py flash --file app.bin
 # equivalente por pasos: erase -> write -> verify (--offset, --type)
 ```
 
 ### Flashear el propio SPL (cabecera+SPL+isd, 0x0–0x3000)
 
 ```bash
-sudo $PY tools/hidflash.py --go flash --spl --file build/spl_image_full.bin
-sudo $PY tools/hidflash.py --go reboot        # 0xCA: reinicio al SPL recién escrito
+$PY tools/hidflash.py flash --spl --file build/spl_image_full.bin
+$PY tools/hidflash.py reboot        # 0xCA: reinicio al SPL recién escrito
 ```
 
 > El SPL corre desde RAM (0x4000): reescribir su copia en flash mientras ejecuta es
@@ -63,8 +74,8 @@ sudo $PY tools/hidflash.py --go reboot        # 0xCA: reinicio al SPL recién es
 ### Reinicios por HID
 
 ```bash
-sudo $PY tools/hidflash.py --go reboot   # 0xCA: reinicio normal
-sudo $PY tools/hidflash.py --go msc      # 0xD0: reinicio a ROM MSC (rescate/reflasheo del SPL)
+$PY tools/hidflash.py reboot   # 0xCA: reinicio normal
+$PY tools/hidflash.py msc      # 0xD0: reinicio a ROM MSC (rescate/reflasheo del SPL)
 ```
 
 ### Comandos sueltos (hidflash.py)
@@ -79,6 +90,8 @@ sudo $PY tools/hidflash.py --go msc      # 0xD0: reinicio a ROM MSC (rescate/ref
 | `verify --file f` | CRC device vs fichero |
 | `flash --file f [--spl]` | CHECK→INIT→ERASE→WRITE→VERIFY |
 | `reboot` | reinicio (sin ACK) |
+| `msc` | reinicio a ROM MSC (0xD0) |
+| `wait` | (eliminado: todos los comandos esperan solos) |
 | `wait [--secs N]` | espera el DaniBoot y abre sesión (usa udev/sysfs) |
 
 ### Región SPL por HID (mode 1)

@@ -13,7 +13,7 @@ BANK    := $(FWDIR)/output/uboot_banklink_native.boot
 IMAGE   := build/spl_image_full.bin
 DEVICE  ?= sg0
 
-.PHONY: spl image validate flash clean
+.PHONY: spl image validate flash udev clean
 
 
 spl:
@@ -33,3 +33,9 @@ flash:
 clean:
 	$(MAKE) -C $(FWDIR) clean
 	rm -rf build
+
+udev:
+	sudo cp tools/70-daniboot.rules /etc/udev/rules.d/70-daniboot.rules
+	sudo udevadm control --reload
+	sudo udevadm trigger
+	@echo "regla udev instalada (una sola vez): los comandos HID ya no necesitan sudo"
