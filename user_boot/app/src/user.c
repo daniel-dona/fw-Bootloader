@@ -10,6 +10,7 @@
 /* fallback RAW: si jlfs_fopen falla (sin JLFS), write/erase/crc operan sobre
  * la flash con direccionamiento absoluto (zona de update @0x3000). */
 static u8 jlfs_ok = 0;
+volatile u32 g_window_ms_cfg = 3001; /* marcador .data: 3001 = b9 0b 00 00 */
 #define SU_APP_BASE 0x3000
 #include "dec.h"
 
@@ -455,7 +456,7 @@ void upgrade_loop()
             if (!session) {
                 mdelay(10);
                 window_ms += 10;
-                if (window_ms >= 3000) {
+                if (window_ms >= g_window_ms_cfg) {
                     /* ventana agotada: cerrar USB como en REBOOT y lanzar el app */
                     ut_devic_mode_close();
                     usb_disable_for_ota();
@@ -494,23 +495,29 @@ void upgrade_loop()
             break;
 
         case JL_SU_CMD_REBOOT:
-            log_info("JL_SU_CMD_REBOOT -> ROM MSC (sin Arduino)\n");
+            log_info("JL_SU_CMD_REBOOT\n");
             ut_devic_mode_close();
             usb_disable_for_ota();
-            {
-                /* boot-state magic del ROM @0x10804: 'usb'+ED 63 81 67 EF
-                 * (refs @0x1102D6 del MaskROM) -> el ROM entra en MSC UBOOT1.00 */
-                volatile u32 *p = (volatile u32 *)0x10804;
-                p[0] = 0xED627375;
-                p[1] = 0xEF678163;
-                chip_reset();
-            }
 #if(USE_UPGRADE_MAGIC)
             uboot_set_uart_upgrade_succ();
 #endif
 #if DUAL_BANK_MODE
             chip_reset();
 #endif
+            return;
+
+        case 0xD0: /* JL_SU_CMD_ENTER_ROM_MSC: reiniciar en MSC del ROM (sin Arduino) */
+            log_info("ENTER_ROM_MSC -> boot-state magic @0x10804\n");
+            ut_devic_mode_close();
+            usb_disable_for_ota();
+            {
+                /* boot-state del ROM @0x10804: 'usb'+ED 63 81 67 EF
+                 * (refs @0x1102D6 del MaskROM) -> el ROM entra en MSC UBOOT1.00 */
+                volatile u32 *p = (volatile u32 *)0x10804;
+                p[0] = 0xED627375;
+                p[1] = 0xEF678163;
+                chip_reset();
+            }
             return;
         }
         g_ops = NULL;
