@@ -903,14 +903,14 @@ def main(argv=None):
     try:
         if cmd == "info":
             i = hf.device_info()
-            print("usb     : vid=%s pid=%s sdk_id=0x%08X" % (i["vid"].hex(), i["pid"].decode("ascii", "replace"), i["sdk_id"]))
-            print("flash   : id=%s size=%d" % (i["flash_id"], i["flash_capacity"]))
-            print("uuid    : %s" % i["uuid"])
-            print("regiones:")
+            print("usb      vid=%s pid=%s sdk_id=0x%08X" % (i["vid"].hex(), i["pid"].decode("ascii", "replace"), i["sdk_id"]))
+            print("flash    id=%s size=%d" % (i["flash_id"], i["flash_capacity"]))
+            print("uuid     %s" % i["uuid"])
+            print("region    base      size")
             for name in ("spl", "app", "isd"):
                 base = i["regions"][name]; size = i["region_sizes"][name]
-                print("  %-4s base=0x%05X size=%d (%d KB)" % (name, base, size, size // 1024))
-            print("commit  : %s" % i["commit"])
+                print("%-8s  0x%05X  %d" % (name, base, size))
+            print("commit   %s" % i["commit"])
         elif cmd == "check":
             print(hf.device_check())
         elif cmd == "init":
