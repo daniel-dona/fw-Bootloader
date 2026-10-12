@@ -419,6 +419,10 @@ void upgrade_loop()
 {
     dev_g_ops = (JL_SECTOR_COMMAND_DEV_ITEM *)dev_g_buf;//reply buf, 64 size is needed for usb compatibility later
 
+    /* verde PB09: señal de vida de la ventana (GPIO, 1=encendido) */
+    JL_PORTB->DIR &= ~BIT(9);
+    JL_PORTB->OUT |= BIT(9);
+
     /* Ventana de update: 3 s escuchando al host. Si llega un comando,
      * sesion sin timeout. Si no, cerrar USB y lanzar el app (sfc_mode_boot). */
     u32 window_ms = 0;
@@ -434,7 +438,9 @@ void upgrade_loop()
                 mdelay(10);
                 window_ms += 10;
                 if (window_ms >= WINDOW_MS) {
-                    break;  /* ventana agotada: lanzar el app */
+                    /* ventana agotada: apagar verde y lanzar el app */
+                    JL_PORTB->OUT &= ~BIT(9);
+                    break;
                 }
             }
             continue;
@@ -496,6 +502,9 @@ void upgrade_loop()
 
 u8 user_check_upgrade(u32 jlfs_err)
 {
+#ifdef DIAG_NO_USB
+    return 0; /* diagnostico: saltar USB/ventana, probar arranque del app */
+#endif
     flash_alignsize = jlfs_get_flash_align_size();
     u32 flash_app_base_addr = jlfs_get_flash_app_base_addr();
     u32 flash_offset_size = jlfs_get_flash_eoffset_size();
@@ -517,6 +526,7 @@ u8 user_check_upgrade(u32 jlfs_err)
     }
 
     log_info("%s() 0x%x 0x%x\n", __func__, upgrade_file.addr, upgrade_file.size);
+
 
 #if (USB_MODE==1)
     usb_device_mode(0, HID_CLASS);
