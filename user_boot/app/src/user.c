@@ -10,8 +10,8 @@
 /* fallback RAW: si jlfs_fopen falla (sin JLFS), write/erase/crc operan sobre
  * la flash con direccionamiento absoluto (zona de update @0x3000). */
 static u8 jlfs_ok = 0;
-volatile u32 g_window_ms_cfg = 3001; /* marcador .data: 3001 = b9 0b 00 00 */
 #define SU_APP_BASE 0x3000
+#define WINDOW_MS 3000 /* ventana de update */
 #include "dec.h"
 
 #define LOG_TAG_CONST       UPGRADE
@@ -289,27 +289,13 @@ void set_remain_and_upgrade_rsp(u8 cmd)
 
 void jl_su_device_init()
 {
-    u16 crc16_len = 0;
-    u16 crc16 = 0;
-    u8 err;
-    if (g_ops->init.mode == 3) {
-        err = jlfs_get_idle_bank_info(&upgrade_file, g_ops->init.mode);
-    } else {
-        err = jlfs_fopen_by_name(&upgrade_file, (const char *)g_ops->init.file_name, g_ops->init.mode);
-    }
-    if (err) {
-        log_info("file open error !\n");
-        memset(&dev_g_ops->init, 0, sizeof(dev_g_ops->init));
-        dev_g_ops->rsp_status = JL_SU_CMD_OTHER_ERROR;
-    } else {
-        log_info("%s() 0x%x %d\n", __func__, upgrade_file.addr, upgrade_file.size);
-        dev_g_ops->init.upgrade_addr = upgrade_file.addr;
-        dev_g_ops->init.upgrade_len = upgrade_file.size;
-        dev_g_ops->init.upgrade_eoffset = jlfs_get_flash_eoffset_size();
-        dev_g_ops->init.flash_alignsize = jlfs_get_flash_align_size();
-
-        dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
-    }
+    /* Sin JLFS en este producto (isd_config custom): reportar la zona RAW
+     * de update (0x3000..fin de flash) con align 4096. */
+    dev_g_ops->init.upgrade_addr = SU_APP_BASE;
+    dev_g_ops->init.upgrade_len = 0x100000 - SU_APP_BASE;
+    dev_g_ops->init.upgrade_eoffset = 4096;
+    dev_g_ops->init.flash_alignsize = 4096;
+    dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
     dev_g_ops->cmd_len = 1 + 1 + 4 + 4 + 4 + 4; //length calculated per protocol, cannot use sizeof
     /* printf("cmd LEN:%d\n",dev_g_ops->cmd_len); */
 
@@ -447,11 +433,8 @@ void upgrade_loop()
             if (!session) {
                 mdelay(10);
                 window_ms += 10;
-                if (window_ms >= g_window_ms_cfg) {
-                    /* ventana agotada: cerrar USB como en REBOOT y lanzar el app */
-                    ut_devic_mode_close();
-                    usb_disable_for_ota();
-                    break;
+                if (window_ms >= WINDOW_MS) {
+                    break;  /* ventana agotada: lanzar el app */
                 }
             }
             continue;
@@ -526,7 +509,7 @@ u8 user_check_upgrade(u32 jlfs_err)
     u8 err = jlfs_fopen_by_name(&upgrade_file, "app_dir_head", 0);
     jlfs_ok = !err;
     if (err) {
-        log_info("file open error !\n");
+        log_info("fopen err\n");
         /* sin JLFS: seguir a USB update (enumeracion = senal de vida) */
         usb_device_mode(0, HID_CLASS);
         upgrade_loop();
