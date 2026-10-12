@@ -932,9 +932,6 @@ def main(argv=None):
             for r in rows:
                 print("|" + "|".join(c.ljust(x) for c, x in zip(r, w)) + "|")
             print(sep)
-            for r in rows:
-                print("|" + "|".join(c.ljust(x) for c, x in zip(r, w)) + "|")
-            print(sep)
             print("commit   %s" % i["commit"])
         elif cmd == "check":
             print(hf.device_check())
