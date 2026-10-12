@@ -117,13 +117,16 @@ def main():
           % (jl_crc16(own), eoff, len(own), eflags, eindex, ename.split(b'\0')[0].decode()))
 
     # -- 2c) isd_config replacement via validated T2 patch_flash -------------
-    custom = open(CUSTOM_BLOB, 'rb').read()
-    fields, info = isdcfg.decode_isd_config(custom)
-    assert info['crc_ok'] and info['chipkey'] == 0x05F4
-    patched, blob = isdcfg.patch_flash(bytes(flash), fields)
-    assert blob == custom, 'patch_flash did not reproduce the custom blob byte-exact'
-    flash = bytearray(patched)
-    print('isd_config  : custom blob written @0x2CF0 (%d bytes), descriptor @0x40 updated' % len(custom))
+    if CUSTOM_BLOB == 'none':
+        print('isd_config  : --isd none, se conserva la de fabrica del dump')
+    else:
+      custom = open(CUSTOM_BLOB, 'rb').read()
+      fields, info = isdcfg.decode_isd_config(custom)
+      assert info['crc_ok'] and info['chipkey'] == 0x05F4
+      patched, blob = isdcfg.patch_flash(bytes(flash), fields)
+      assert blob == custom, 'patch_flash did not reproduce the custom blob byte-exact'
+      flash = bytearray(patched)
+      print('isd_config  : custom blob written @0x2CF0 (%d bytes), descriptor @0x40 updated' % len(custom))
 
     # -- 2d) blast radius: only the four intended regions may differ ---------
     # -- 2d) blast radius: every changed byte must fall inside one of the four
