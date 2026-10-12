@@ -5,6 +5,7 @@
 #include "atomic.h"
 #include "crc.h"
 #include "norflash.h"
+#include "delay.h"
 
 /* fallback RAW: si jlfs_fopen falla (sin JLFS), write/erase/crc operan sobre
  * la flash con direccionamiento absoluto (zona de update @0x3000). */
@@ -440,14 +441,31 @@ void upgrade_loop()
 {
     dev_g_ops = (JL_SECTOR_COMMAND_DEV_ITEM *)dev_g_buf;//reply buf, 64 size is needed for usb compatibility later
 
+    /* Ventana de update: 3 s escuchando al host. Si llega un comando,
+     * sesion sin timeout. Si no, cerrar USB y lanzar el app (sfc_mode_boot). */
+    u32 window_ms = 0;
+    u8 session = 0;
+
     while (1) {
 
         g_ops = (JL_SECTOR_COMMAND_ITEM *)recv_new_data();
 
         if (g_ops == NULL) {
             wdt_clr();
+            if (!session) {
+                mdelay(10);
+                window_ms += 10;
+                if (window_ms >= 3000) {
+                    /* ventana agotada: cerrar USB como en REBOOT y lanzar el app */
+                    ut_devic_mode_close();
+                    usb_disable_for_ota();
+                    break;
+                }
+            }
             continue;
         }
+
+        session = 1;    /* hay host: sin timeout durante la sesion */
 
         switch (g_ops->cmd) {
         case JL_SU_CMD_DEVICE_INIT:
