@@ -930,13 +930,7 @@ def main(argv=None):
             hf.enter_rom_msc()
             print("ok")
     except HidTimeout as e:
-        cmd = getattr(e, "cmd", None)
-        if cmd == 0xD1:
-            print("error: 0xD1 not implemented (unplug/replug to load new SPL)", file=sys.stderr)
-        elif cmd == 0xD0:
-            print("error: 0xD0 not implemented (running SPL too old)", file=sys.stderr)
-        else:
-            print("error: no response to cmd 0x%02X" % cmd, file=sys.stderr)
+        print("error: %s" % e, file=sys.stderr)
         sys.exit(1)
     except CommandError as e:
         print("error de comando: %s" % e, file=sys.stderr)
