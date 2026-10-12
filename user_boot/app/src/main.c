@@ -107,7 +107,9 @@ int main(void)
     }
 #endif
 
-    jl_check_upgrade(err);
+    /* jl_check_upgrade() eliminado: user_check_upgrade() ya cubre el mismo
+     * protocolo (HID update con ventana 3s) y evita arrastrar la maquinaria
+     * de upgrade del archivo al binario (~4 KB). */
 
     sfc_mode_boot();
 
