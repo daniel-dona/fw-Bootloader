@@ -494,9 +494,17 @@ void upgrade_loop()
             break;
 
         case JL_SU_CMD_REBOOT:
-            log_info("JL_SU_CMD_REBOOT\n");
+            log_info("JL_SU_CMD_REBOOT -> ROM MSC (sin Arduino)\n");
             ut_devic_mode_close();
             usb_disable_for_ota();
+            {
+                /* boot-state magic del ROM @0x10804: 'usb'+ED 63 81 67 EF
+                 * (refs @0x1102D6 del MaskROM) -> el ROM entra en MSC UBOOT1.00 */
+                volatile u32 *p = (volatile u32 *)0x10804;
+                p[0] = 0xED627375;
+                p[1] = 0xEF678163;
+                chip_reset();
+            }
 #if(USE_UPGRADE_MAGIC)
             uboot_set_uart_upgrade_succ();
 #endif
