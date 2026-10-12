@@ -63,9 +63,10 @@ sudo $PY tools/hidflash.py --go reboot        # 0xCA: reinicio al SPL recién es
 ### Reinicios por HID
 
 ```bash
-# host C (uboothid_cli) — al abrir sesión por primera vez:
-sudo /tmp/bm/t14/uboothid_cli --vid 4244 --pid 4c44 reboot   # 0xCA: reinicio normal
-sudo /tmp/bm/t14/uboothid_cli --vid 4244 --pid 4c44 msc      # 0xD0: reinicio a ROM MSC
+make host-tools        # compila build/uboothid_cli (una vez)
+UB=./build/uboothid_cli
+sudo $UB reboot   # 0xCA: reinicio normal
+sudo $UB msc      # 0xD0: reinicio a ROM MSC (rescate/reflasheo del SPL)
 ```
 
 ### Comandos sueltos (hidflash.py)

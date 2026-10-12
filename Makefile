@@ -13,7 +13,13 @@ BANK    := $(FWDIR)/output/uboot_banklink_native.boot
 IMAGE   := build/spl_image_full.bin
 DEVICE  ?= sg0
 
-.PHONY: spl image validate flash clean
+.PHONY: spl image validate flash host-tools clean
+
+host-tools:
+	mkdir -p build
+	$(CC) -O2 -Wall -Wextra -std=c11 -o build/uboothid_cli tools/uboothid_cli.c
+	sudo chown $(USER) build/uboothid_cli 2>/dev/null || true
+	echo "host tool: build/uboothid_cli (sudo para hidraw, o udev)"
 
 spl:
 	$(MAKE) -C $(FWDIR) TOOL_DIR=$(TC)
