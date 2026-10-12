@@ -942,17 +942,59 @@ def main(argv=None):
             print("verify OK (%d B, block %d)" % (len(img), bs))
         elif cmd == "flash":
             img = open(args.file, "rb").read()
+            base = 0x0 if getattr(args, "spl", False) else args.offset
             if getattr(args, "spl", False):
-                init0 = hf.device_init()
-                if init0["addr"] != 0:
-                    print("error: running SPL does not support --spl "
-                          "(reports addr=0x%X len=%d); flash it from ROM MSC"
-                          % (init0["addr"], init0["len"]), file=sys.stderr)
-                    sys.exit(2)
                 img = img[:0x3000]
-                args.mode = 1
-            hf.flash(img, args.name.encode(), args.mode, args.erase_type)
-            print("ok")
+            end = base + len(img)
+            if base < 0x3000 and not (args.spl or args.unsafe):
+                print("error: rango 0x%X-0x%X toca la zona de sistema (usa --spl o --unsafe)"
+                      % (base, end), file=sys.stderr)
+                sys.exit(2)
+            if end > 0x100000:
+                print("error: rango excede el tamano de flash", file=sys.stderr)
+                sys.exit(2)
+            off = 0          # bytes de img ya escritos y confirmados
+            erased = False
+            for attempt in range(31):
+                try:
+                    if not erased:
+                        a0 = base & ~0xFFF
+                        a1 = (end + 0xFFF) & ~0xFFF
+                        for ea in range(a0, a1, 4096):
+                            hf.erase(ea, args.erase_type)
+                        erased = True
+                    while off < len(img):
+                        n = min(MAX_WRITE_DATA, len(img) - off)
+                        hf.write(base + off, img[off:off + n])
+                        off += n
+                        print("\rwrite %d/%d" % (off, len(img)), end="", flush=True)
+                    print()
+                    hf.verify(img, 4096, base)
+                    print("flash OK")
+                    return 0
+                except (HidTimeout, OSError, CommandError) as e:
+                    print("error: %s (escritos %d/%d) — esperando ventana para reanudar"
+                          % (e, off, len(img)), file=sys.stderr)
+                    hf.close()
+                    deadline = time.time() + args.wait
+                    hf = None
+                    while time.time() < deadline:
+                        p = find_hidraw(product=PRODUCT_NAME)
+                        if p:
+                            try:
+                                hf = HidFlash(HidrawTransport(p), trace=args.trace,
+                                              timeout=args.timeout)
+                                hf.device_check()
+                                hf.device_init()
+                                break
+                            except (OSError, HidTimeout, CommandError):
+                                hf = None
+                        time.sleep(0.1)
+                    if hf is None:
+                        print("error: el device no volvio; reinicia el chip y "
+                              "reintenta el mismo comando (reanuda donde quedo)",
+                              file=sys.stderr)
+                        sys.exit(1)
         elif cmd == "reboot":
             hf.reboot()
             print("ok")
