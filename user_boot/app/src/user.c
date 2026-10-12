@@ -12,6 +12,7 @@
 static u8 jlfs_ok = 0;
 #define SU_APP_BASE 0x3000
 #define WINDOW_MS 5000 /* ventana de update */
+static u32 su_base = SU_APP_BASE; /* base de la region activa: 0x3000=app, 0x0=SPL */
 #include "dec.h"
 
 #define LOG_TAG_CONST       UPGRADE
@@ -289,10 +290,20 @@ void set_remain_and_upgrade_rsp(u8 cmd)
 
 void jl_su_device_init()
 {
-    /* Sin JLFS en este producto (isd_config custom): reportar la zona RAW
-     * de update (0x3000..fin de flash) con align 4096. */
-    dev_g_ops->init.upgrade_addr = SU_APP_BASE;
-    dev_g_ops->init.upgrade_len = 0x100000 - SU_APP_BASE;
+    /* Sin JLFS en este producto (isd_config custom). Dos regiones segun mode:
+     * mode 0 (default): zona de update del app (0x3000..fin)
+     * mode 1         : el propio SPL + cabecera + isd (0x0..0x3000)
+     *   (el SPL corre en RAM: reescribir su copia en flash es seguro; si el
+     *    flasheo falla, el ROM cae en MSC = recuperable) */
+    if (g_ops->init.mode == 1) {
+        su_base = 0;
+        dev_g_ops->init.upgrade_addr = 0;
+        dev_g_ops->init.upgrade_len = 0x3000;
+    } else {
+        su_base = SU_APP_BASE;
+        dev_g_ops->init.upgrade_addr = SU_APP_BASE;
+        dev_g_ops->init.upgrade_len = 0x100000 - SU_APP_BASE;
+    }
     dev_g_ops->init.upgrade_eoffset = 4096;
     dev_g_ops->init.flash_alignsize = 4096;
     dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
@@ -311,7 +322,7 @@ void jl_su_flash_crc()
     if (!jlfs_ok) {
         /* RAW: CRC por bloques leyendo la flash directamente */
         for (int i = 0; i < block_count; i++) {
-            norflash_read(p, SU_APP_BASE + g_ops->crc_list.address + i * l, l);
+            norflash_read(p, su_base + g_ops->crc_list.address + i * l, l);
             dev_g_ops->crc_list.crc[i] = chip_crc16(p, l);
         }
         dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
@@ -338,8 +349,8 @@ void jl_su_flash_crc()
 void jl_su_erase()
 {
     if (!jlfs_ok) {
-        /* RAW: erase de sector en la zona de update */
-        norflash_eraser(WINBOND_SECTOR_ERASE, SU_APP_BASE + g_ops->erase.address);
+        /* RAW: erase de sector en la region activa */
+        norflash_eraser(WINBOND_SECTOR_ERASE, su_base + g_ops->erase.address);
         dev_g_ops->rsp_status = JL_SU_CMD_SUSS;
         dev_g_ops->cmd_len = 1 + 1;
         set_remain_and_upgrade_rsp(JL_SU_CMD_ERASE);
@@ -382,8 +393,8 @@ void jl_su_erase()
 void jl_su_write_flash()
 {
     if (!jlfs_ok) {
-        /* RAW: escritura absoluta en la zona de update */
-        u8 st = norflash_write(g_ops->write.data, SU_APP_BASE + g_ops->write.address, g_ops->write.data_length);
+        /* RAW: escritura absoluta en la region activa */
+        u8 st = norflash_write(g_ops->write.data, su_base + g_ops->write.address, g_ops->write.data_length);
         dev_g_ops->rsp_status = (st == 0) ? JL_SU_CMD_SUSS : JL_SU_CMD_WRITE_ERROR;
         dev_g_ops->cmd_len = 1 + 1;
         set_remain_and_upgrade_rsp(JL_SU_CMD_WRITE);

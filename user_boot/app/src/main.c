@@ -97,6 +97,7 @@ int main(void)
      * dentro de upgrade_loop; si no hay sesion, sigue a sfc_mode_boot). */
     user_check_upgrade(err);
 
+
 #if 0
     JL_PORTA->DIR |= BIT(6);
     JL_PORTA->DIE |= BIT(6);

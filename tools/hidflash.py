@@ -830,6 +830,8 @@ def main(argv=None):
     p.add_argument("--name", default="app_dir_head")
     p.add_argument("--mode", type=int, default=0)
     p.add_argument("--erase-type", type=int, default=ERASE_SECTOR, choices=list(ERASE_UNITS))
+    p.add_argument("--spl", action="store_true",
+                   help="flashea el propio SPL: mode=1 y recorta el fichero a 0x3000 B")
 
     p = sub.add_parser("reboot", help="REBOOT (0xCA, sin respuesta)")
     p = sub.add_parser("wait", help="espera el DaniBoot por udev y abre sesión (INIT)")
@@ -906,6 +908,9 @@ def main(argv=None):
             print("verify OK (%d B, block %d)" % (len(img), bs))
         elif cmd == "flash":
             img = open(args.file, "rb").read()
+            if getattr(args, "spl", False):
+                img = img[:0x3000]
+                args.mode = 1
             hf.flash(img, args.name.encode(), args.mode, args.erase_type,
                      progress=lambda m: print("  " + m))
             print("flash OK (sin reboot; ejecuta 'reboot' cuando proceda)")
