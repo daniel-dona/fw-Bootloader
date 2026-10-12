@@ -510,7 +510,9 @@ class HidFlash:
         if raw is None:
             if expect_silence:
                 return None
-            raise HidTimeout("sin respuesta del SPL a cmd 0x%02X" % cmd)
+            err = HidTimeout("sin respuesta del SPL a cmd 0x%02X" % cmd)
+            err.cmd = cmd
+            raise err
         if self.trace:
             print("RX            %s" % hexdump(raw[:32]) + (" ..." if len(raw) > 32 else ""))
         rcmd, status, rparam, _ = parse_frame(raw)
@@ -945,10 +947,23 @@ def main(argv=None):
             hf.enter_rom_msc()
             print("0xD0 enviado; el SPL reinicia en MSC UBOOT1.00")
     except HidTimeout as e:
-        print("sin respuesta del SPL: %s" % e, file=sys.stderr)
-        print("Para entrar en la ventana del SPL hay que RESETEAR el hardware: "
-              "desenchufa y vuelve a enchufar el USB, y reintenta el comando "
-              "inmediatamente (la ventana dura 5 s).", file=sys.stderr)
+        cmd = getattr(e, "cmd", None)
+        if cmd == 0xD1:
+            print("el SPL en ejecución no implementó 0xD1 (info): tu flash ya "
+                  "tiene la versión nueva pero está corriendo la anterior.",
+                  file=sys.stderr)
+            print("Haz un CICLO DE ENERGÍA (desenchufa/enchufa): el reset por "
+                  "software puede arrancar caliente sin recargar el banco.",
+                  file=sys.stderr)
+        elif cmd == 0xD0:
+            print("sin respuesta al 0xD0: la versión corriendo no soporta el "
+                  "reinicio a MSC. Usa ROM MSC manual o reflash del SPL.",
+                  file=sys.stderr)
+        else:
+            print("sin respuesta del SPL: %s" % e, file=sys.stderr)
+            print("Si el chip estaba corriendo el app, RESETEA el hardware "
+                  "(desenchufa/enchufa) para entrar en la ventana de 5 s y "
+                  "reintenta el comando inmediatamente.", file=sys.stderr)
         sys.exit(1)
     except CommandError as e:
         print("error de comando: %s" % e, file=sys.stderr)
