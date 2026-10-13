@@ -7,7 +7,7 @@
 #   make clean
 #
 PY      ?= $(CURDIR)/.venv/bin/python
-TC      ?= /home/dani/steam_deck_mandos/.tmp/jl_tc/jieli-linux-toolchains-20250324.1/pi32v2/bin
+TC      ?= $(CURDIR)/../tools/jl-linux-toolchain/pi32v2/bin
 FWDIR   := user_boot/cpu/br23
 BANK    := $(FWDIR)/output/uboot_banklink_native.boot
 IMAGE   := build/spl_image_full.bin
