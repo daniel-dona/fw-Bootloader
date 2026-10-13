@@ -235,6 +235,7 @@ all: pre_build $(OUT_ELF)
 
 pre_build:
 	$(info +PRE-BUILD)
+	$(QUITE) echo '#define SPL_GIT_SHORT "'$(shell git rev-parse --short HEAD 2>/dev/null || echo dev)'"' > ../../app/inc/spl_version.h
 	$(QUITE) $(CC) $(CFLAGS) $(DEFINES) $(INCLUDES) -D__LD__ -E -P ../../cpu/br23/output/ram_ld.c -o ../../cpu/br23/output/ram.ld
 
 clean:

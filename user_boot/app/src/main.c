@@ -93,11 +93,10 @@ int main(void)
     }
 
 
-#if(USE_UPGRADE_MAGIC)
-    if (uboot_check_upgrade_magic() || err) {
-        user_check_upgrade(err);
-    }
-#endif
+    /* Ventana de update: escuchar siempre al host por HID (timeout 3 s
+     * dentro de upgrade_loop; si no hay sesion, sigue a sfc_mode_boot). */
+    user_check_upgrade(err);
+
 
 #if 0
     JL_PORTA->DIR |= BIT(6);
@@ -109,7 +108,12 @@ int main(void)
     }
 #endif
 
-    jl_check_upgrade(err);
+    /* jl_check_upgrade() eliminado: user_check_upgrade() ya cubre el mismo
+     * protocolo (HID update con ventana 3s) y evita arrastrar la maquinaria
+     * de upgrade del archivo al binario (~4 KB). */
+
+    /* margen de WDT para el arranque del app (el app reconfigura el suyo) */
+    wdt_init(WDT_16s);
 
     sfc_mode_boot();
 

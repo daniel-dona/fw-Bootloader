@@ -1,0 +1,3 @@
+# DaniBoot SPL (JieLi br23) — acceso HID sin root para el usuario con sesión activa
+# Instalación (una sola vez):  make udev
+SUBSYSTEM=="hidraw", ATTRS{idVendor}=="4244", ATTRS{idProduct}=="4c44", TAG+="uaccess"

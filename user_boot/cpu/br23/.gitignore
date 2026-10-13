@@ -1,0 +1,4 @@
+output/*
+!output/download.sh
+*.o
+*.d
