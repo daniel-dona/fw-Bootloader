@@ -75,6 +75,15 @@ $PY tools/hidflash.py reboot        # 0xCA: reinicio al SPL recién escrito
 > El SPL corre desde RAM (0x4000): reescribir su copia en flash mientras ejecuta es
 > seguro. Si un flasheo del SPL sale mal, el chip cae en **ROM MSC** = recuperable.
 
+### Configuración inicial (una vez): permisos HID sin root
+
+```bash
+sudo make udev      # instala la regla udev + reload/trigger
+```
+
+Nota: si el mando ya estaba conectado al instalar la regla, el `trigger` la
+aplica al instante (no hace falta reconectar).
+
 ### Reinicios por HID
 
 ```bash
@@ -93,8 +102,8 @@ $PY tools/hidflash.py msc      # 0xD0: reinicio a ROM MSC (rescate/reflasheo del
 | `crc --offset 0x... --len N` | CRC16 por bloques del device |
 | `verify --file f` | CRC device vs fichero |
 | `flash --file f [--spl]` | CHECK→INIT→ERASE→WRITE→VERIFY |
-| `reboot` | reinicio (sin ACK) |
-| `msc` | reinicio a ROM MSC (0xD0) |
+| `reboot` | reinicio normal (ACK SUSS + 200 ms antes del reset) |
+| `msc` | reinicio a ROM MSC (0xD0, ACK + 200 ms) |
 | `wait` | (eliminado: todos los comandos esperan solos) |
 | `wait [--secs N]` | espera el DaniBoot y abre sesión (usa udev/sysfs) |
 
