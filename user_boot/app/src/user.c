@@ -474,7 +474,7 @@ void upgrade_loop()
         JL_PORTB->OUT |= BIT(9);
 
         JL_PORTB->OUT |= BIT(2);
-        mdelay(50);
+        mdelay(1);
         JL_PORTB->OUT &= ~BIT(2);
 
         switch (g_ops->cmd) {
