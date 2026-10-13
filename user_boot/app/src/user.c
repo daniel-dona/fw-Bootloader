@@ -439,7 +439,12 @@ void upgrade_loop()
 
     /* verde PB09: señal de vida de la ventana (GPIO, 1=encendido) */
     JL_PORTB->DIR &= ~BIT(9);
+    JL_PORTB->DIR &= ~BIT(2);
+    JL_PORTA->DIR &= ~BIT(0);
+
     JL_PORTB->OUT |= BIT(9);
+    mdelay(100);
+    JL_PORTB->OUT &= ~BIT(9);
 
     /* Ventana de update: 3 s escuchando al host. Si llega un comando,
      * sesion sin timeout. Si no, cerrar USB y lanzar el app (sfc_mode_boot). */
@@ -465,6 +470,12 @@ void upgrade_loop()
         }
 
         session = 1;    /* hay host: sin timeout durante la sesion */
+
+        JL_PORTB->OUT |= BIT(9);
+
+        JL_PORTB->OUT |= BIT(2);
+        mdelay(50);
+        JL_PORTB->OUT &= ~BIT(2);
 
         switch (g_ops->cmd) {
         case JL_SU_CMD_DEVICE_INIT:
