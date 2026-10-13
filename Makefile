@@ -30,8 +30,8 @@ validate: image
 	$(PY) tools/validate_image.py $(IMAGE)
 
 flash: validate
-	sudo $(PY) .tmp/jl-uboot-tool/jluboottool.py --device /dev/$(DEVICE) --chip br23 \
-	  --cmds "write 0 $(CURDIR)/$(IMAGE)" "read 0 $(CURDIR)/build/rd_flash.bin"
+	$(PY) tools/hidflash.py flash --file $(IMAGE)
+	$(PY) tools/hidflash.py reboot
 
 clean:
 	$(MAKE) -C $(FWDIR) clean
