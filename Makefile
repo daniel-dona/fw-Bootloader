@@ -12,6 +12,9 @@ FWDIR   := user_boot/cpu/br23
 BANK    := $(FWDIR)/output/uboot_banklink_native.boot
 IMAGE   := build/spl_image_full.bin
 DEVICE  ?= sg0
+JL_TOOLS ?= $(CURDIR)/../tools/jl-linux-toolchain/pi32v2
+JL_UTILS_DIR ?= $(CURDIR)/../tools/jl-linux-postbuild
+export JL_TOOLS JL_UTILS_DIR
 
 .PHONY: spl image validate flash udev clean
 
